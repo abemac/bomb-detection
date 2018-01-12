@@ -5,6 +5,6 @@ type Manager struct {
 }
 
 //NewManager creates a new Manager
-func (m *Manager) NewManager() *Manager {
+func NewManager() *Manager {
 	return new(Manager)
 }
