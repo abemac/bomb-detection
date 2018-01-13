@@ -1,13 +1,15 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/abemac/bomb-detection/manager"
+	"github.com/abemac/bomb-detection/nodesim"
 )
 
 func main() {
 	m := manager.NewManager()
-	fmt.Println(m)
+	for i := 0; i < 20; i++ {
+		nodesim.NewNode()
+	}
 
+	m.Run()
 }

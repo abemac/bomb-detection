@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"net"
 	"strconv"
+	"time"
 )
 
 //Node represents a node, which is a sensor
@@ -14,24 +15,33 @@ type Node struct {
 }
 
 //NewNode creates a new Node
-func NewNode() *Node {
+func NewNode() {
 	n := new(Node)
 	n.managerIP = "127.0.0.1"
 	n.managerPort = 12345
-	n.connectToManager()
-	return n
+	go n.mainLoop()
 }
 
+func (n *Node) mainLoop() {
+	n.connectToManager()
+
+}
 func (n *Node) sample() int {
 	return rand.Intn(100)
 }
 
 func (n *Node) connectToManager() {
-	conn, err := net.Dial("tcp", n.managerIP+":"+strconv.Itoa(int(n.managerPort)))
-	if err != nil {
-		panic(err.Error())
+
+	for {
+		conn, err := net.Dial("tcp", n.managerIP+":"+strconv.Itoa(int(n.managerPort)))
+		if err != nil {
+			time.Sleep(time.Second)
+		} else {
+			n.conn = conn
+			break
+		}
 	}
-	n.conn = conn
+
 }
 func (n *Node) disconnectFromManager() {
 	n.conn.Close()
