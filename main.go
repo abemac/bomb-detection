@@ -6,10 +6,8 @@ import (
 )
 
 func main() {
-	m := manager.NewManager()
-	for i := 0; i < 20; i++ {
-		nodesim.NewNode()
-	}
+	nodesim.CreateNodes(10)
 
+	m := manager.NewManager()
 	m.Run()
 }

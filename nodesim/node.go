@@ -46,3 +46,14 @@ func (n *Node) connectToManager() {
 func (n *Node) disconnectFromManager() {
 	n.conn.Close()
 }
+
+func (n *Node) getGPSLoc() (float64, float64) {
+	return rand.Float64(), rand.Float64()
+}
+
+func CreateNodes(number uint) {
+	var i uint
+	for i = 0; i < number; i++ {
+		NewNode()
+	}
+}
