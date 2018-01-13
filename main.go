@@ -1,8 +1,13 @@
 package main
 
-import "github.com/abemac/bomb-detection/manager"
+import (
+	"fmt"
+
+	"github.com/abemac/bomb-detection/manager"
+)
 
 func main() {
 	m := manager.NewManager()
+	fmt.Println(m)
 
 }
