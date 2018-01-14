@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"fmt"
 	"sync"
 	"time"
 )
@@ -11,12 +12,12 @@ type node struct {
 	longitude      float64
 	superNode      bool
 	lastSampleTime int64 //unix timestamp
-	mutex          *sync.Mutex
+	mutex          *sync.RWMutex
 }
 
 func (m *Manager) newNode() uint64 {
 	n := new(node)
-	n.mutex = new(sync.Mutex)
+	n.mutex = new(sync.RWMutex)
 	id := m.getNewNodeID()
 	m.mapMutex.Lock()
 	m.nodes[id] = n
@@ -37,24 +38,41 @@ func (m *Manager) getNewNodeID() uint64 {
 	return m.lastAssignedNodeID
 }
 func (m *Manager) updateNodeValue(id uint64, newSample int) {
-	m.mapMutex.Lock()
+	m.mapMutex.RLock()
 	n := m.nodes[id]
-	m.mapMutex.Unlock()
+	m.mapMutex.RUnlock()
 	n.updateValue(newSample)
 }
 func (m *Manager) updateNodeLocation(id uint64, latitude float64, longitude float64) {
-	m.mapMutex.Lock()
+	m.mapMutex.RLock()
 	n, ok := m.nodes[id]
 	if !ok {
 		panic("AHHH")
 	}
-	m.mapMutex.Unlock()
+	m.mapMutex.RUnlock()
 	n.mutex.Lock()
 	n.latitude = latitude
 	n.longitude = longitude
 	n.mutex.Unlock()
 
 }
+func (m *Manager) printNodes() {
+	m.mapMutex.RLock()
+	for key, val := range m.nodes {
+		val.mutex.RLock()
+		fmt.Println(*val, "Id:", key)
+		val.mutex.RUnlock()
+	}
+	m.mapMutex.RUnlock()
+}
+
+func (m *Manager) periodicallyPrintNodes(sleepTime int) {
+	for {
+		m.printNodes()
+		time.Sleep(time.Second * time.Duration(sleepTime))
+	}
+}
+
 func (n *node) updateValue(newSample int) {
 	n.mutex.Lock()
 	n.value = newSample

@@ -14,7 +14,7 @@ type Manager struct {
 	nodes              map[uint64]*node
 	lastAssignedNodeID uint64
 	mapMutex           *sync.RWMutex
-	idMutex            *sync.RWMutex
+	idMutex            *sync.Mutex
 }
 
 //NewManager creates a new Manager
@@ -23,7 +23,7 @@ func NewManager() *Manager {
 	m.nodes = make(map[uint64]*node)
 	m.lastAssignedNodeID = 0
 	m.mapMutex = new(sync.RWMutex)
-	m.idMutex = new(sync.RWMutex)
+	m.idMutex = new(sync.Mutex)
 	return m
 }
 
