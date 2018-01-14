@@ -54,13 +54,15 @@ func (m *Manager) handleConnection(conn net.Conn) {
 			break //connection closed
 		}
 		response := m.handleMessage(message)
-		m.send(response, conn)
+		if response != nil {
+			m.send(response, conn)
+		}
 	}
 
 }
 
 func (m *Manager) handleMessage(message *constants.NodeToManagerJSON) *constants.ManagerToNodeJSON {
-	resp := new(constants.ManagerToNodeJSON)
+
 	var id uint64
 	if message.ID == constants.ID_NOT_ASSIGNED {
 		id = m.newNode()
@@ -69,13 +71,13 @@ func (m *Manager) handleMessage(message *constants.NodeToManagerJSON) *constants
 	}
 
 	if message.SampleValid {
-		resp.PerformSample = false
 		m.updateNodeValue(id, message.SampleValue)
 		log.D("Receieved new sample from ID", id, ", value= ", message.SampleValue)
-	} else {
-		m.updateNodeLocation(id, message.Latitude, message.Longitude)
-		resp.PerformSample = true
+		return nil
 	}
+	resp := new(constants.ManagerToNodeJSON)
+	m.updateNodeLocation(id, message.Latitude, message.Longitude)
+	resp.PerformSample = true
 	resp.AssignedID = id
 	resp.NextCheckin = 2
 	return resp
