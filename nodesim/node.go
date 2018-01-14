@@ -8,11 +8,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/abemac/bomb-detection/manager/constants"
-	"github.com/abemac/bomb-detection/manager/logger"
+	"github.com/abemac/bomb-detection/constants"
 )
-
-var log = logger.NewLogger("Node.go")
 
 //Node represents a node, which is a sensor
 type Node struct {
@@ -35,6 +32,7 @@ func CreateNodes(number uint64) {
 	for i = 0; i < number; i++ {
 		NewNode()
 	}
+	log.I(number, "new nodes created, they are active")
 }
 
 func (n *Node) mainLoop() {

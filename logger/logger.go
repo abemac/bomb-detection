@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/abemac/bomb-detection/manager/constants"
+	"github.com/abemac/bomb-detection/constants"
 )
 
 type Logger struct {

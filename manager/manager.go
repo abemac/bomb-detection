@@ -2,25 +2,28 @@ package manager
 
 import (
 	"bufio"
-	"container/list"
 	"encoding/json"
 	"net"
+	"sync"
 
-	"github.com/abemac/bomb-detection/manager/constants"
-	"github.com/abemac/bomb-detection/manager/logger"
+	"github.com/abemac/bomb-detection/constants"
 )
-
-var log = logger.NewLogger("Manager.go")
 
 //Manager represents the manager that collects and processes node data
 type Manager struct {
-	connectedNodes *list.List
+	nodes              map[uint64]*node
+	lastAssignedNodeID uint64
+	mapMutex           *sync.RWMutex
+	idMutex            *sync.RWMutex
 }
 
 //NewManager creates a new Manager
 func NewManager() *Manager {
 	m := new(Manager)
-	m.connectedNodes = list.New()
+	m.nodes = make(map[uint64]*node)
+	m.lastAssignedNodeID = 0
+	m.mapMutex = new(sync.RWMutex)
+	m.idMutex = new(sync.RWMutex)
 	return m
 }
 
@@ -56,6 +59,29 @@ func (m *Manager) handleConnection(conn net.Conn) {
 
 }
 
+func (m *Manager) handleMessage(message *constants.NodeToManagerJSON) *constants.ManagerToNodeJSON {
+	resp := new(constants.ManagerToNodeJSON)
+	var id uint64
+	if message.ID == constants.ID_NOT_ASSIGNED {
+		id = m.newNode()
+	} else {
+		id = message.ID
+	}
+
+	if message.SampleValid {
+		resp.PerformSample = false
+		m.updateNodeValue(id, message.SampleValue)
+		log.D("Receieved new sample from ID", id, ", value= ", message.SampleValue)
+	} else {
+		m.updateNodeLocation(id, message.Latitude, message.Longitude)
+		resp.PerformSample = true
+	}
+	resp.AssignedID = id
+	resp.NextCheckin = 2
+	return resp
+
+}
+
 func (m *Manager) send(response *constants.ManagerToNodeJSON, conn net.Conn) {
 	messageJSON, err := json.Marshal(response)
 	if err != nil {
@@ -75,17 +101,4 @@ func (m *Manager) recvFrom(conn net.Conn) (*constants.NodeToManagerJSON, error) 
 	json.Unmarshal(bytes[:len(bytes)-1], data)
 	log.D("Received: ", *data)
 	return data, nil
-}
-func (m *Manager) handleMessage(message *constants.NodeToManagerJSON) *constants.ManagerToNodeJSON {
-	resp := new(constants.ManagerToNodeJSON)
-	if message.SampleValid {
-		resp.PerformSample = false
-		//handle new sample data
-		log.D("Receieved new sample from ID", message.ID, ", value= ", message.SampleValue)
-	} else {
-		resp.PerformSample = true
-	}
-	resp.NextCheckin = 2
-	return resp
-
 }
