@@ -27,7 +27,7 @@ func NewManager() *Manager {
 
 func (m *Manager) Run() {
 	log.I("Manager Started")
-	go NewJSONRequestServer(NewWebAPI(m), 12346).Run()
+	NewWebAPI(m)
 	NewJSONRequestServer(m, 12345).Run()
 }
 

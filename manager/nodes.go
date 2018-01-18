@@ -7,11 +7,11 @@ import (
 )
 
 type node struct {
-	Value          int
-	Latitude       float64
-	Longitude      float64
-	SuperNode      bool
-	lastSampleTime int64 //unix timestamp
+	Value          int     `json:"value"`
+	Latitude       float64 `json:"latitude"`
+	Longitude      float64 `json:"longitude"`
+	SuperNode      bool    `json:"superNode"`
+	lastSampleTime int64   //unix timestamp
 	mutex          *sync.RWMutex
 }
 
