@@ -3,6 +3,7 @@ package manager
 import (
 	"bufio"
 	"net"
+	"strconv"
 
 	"github.com/abemac/bomb-detection/constants"
 )
@@ -13,16 +14,19 @@ type MessageHandler interface {
 
 type JSONRequestServer struct {
 	msgHandler MessageHandler
+	port       uint16
 }
 
-func NewJSONRequestServer(msgHandler MessageHandler) {
+func NewJSONRequestServer(msgHandler MessageHandler, port uint16) *JSONRequestServer {
 	j := new(JSONRequestServer)
 	j.msgHandler = msgHandler
+	j.port = port
+	return j
 }
 
 func (j *JSONRequestServer) Run() {
-	log.I("Manager Started")
-	listener, err := net.Listen("tcp", ":12345")
+	log.I("JSON Request Server Started")
+	listener, err := net.Listen("tcp", ":"+strconv.Itoa(int(j.port)))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -42,9 +46,6 @@ func (j *JSONRequestServer) handleConnection(conn net.Conn) {
 	for {
 		bytes, err := bufio.NewReader(conn).ReadBytes(constants.DelimJSON[0])
 		if err != nil {
-			panic("eeek")
-		}
-		if err != nil {
 			log.V("Connection to", conn.RemoteAddr(), "closed")
 			break //connection closed
 		}
@@ -52,7 +53,6 @@ func (j *JSONRequestServer) handleConnection(conn net.Conn) {
 		if response != nil {
 			conn.Write(response)
 			conn.Write(constants.DelimJSON)
-			log.D("Sent: ", response)
 		}
 	}
 

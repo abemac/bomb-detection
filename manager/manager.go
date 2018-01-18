@@ -1,9 +1,7 @@
 package manager
 
 import (
-	"bufio"
 	"encoding/json"
-	"net"
 	"sync"
 
 	"github.com/abemac/bomb-detection/constants"
@@ -29,39 +27,14 @@ func NewManager() *Manager {
 
 func (m *Manager) Run() {
 	log.I("Manager Started")
-	listener, err := net.Listen("tcp", ":12345")
-	if err != nil {
-		panic(err.Error())
-	}
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			log.E(err.Error())
-		} else {
-			log.V("Connection to", conn.RemoteAddr(), "created")
-			go m.handleConnection(conn)
-		}
-
-	}
+	go NewJSONRequestServer(NewWebAPI(m), 12346).Run()
+	NewJSONRequestServer(m, 12345).Run()
 }
 
-func (m *Manager) handleConnection(conn net.Conn) {
-	defer conn.Close()
-	for {
-		message, err := m.recvFrom(conn)
-		if err != nil {
-			log.V("Connection to", conn.RemoteAddr(), "closed")
-			break //connection closed
-		}
-		response := m.handleMessage(message)
-		if response != nil {
-			m.send(response, conn)
-		}
-	}
-
-}
-
-func (m *Manager) handleMessage(message *constants.NodeToManagerJSON) *constants.ManagerToNodeJSON {
+func (m *Manager) handleMessage(bytes []byte) []byte {
+	message := new(constants.NodeToManagerJSON)
+	json.Unmarshal(bytes[:len(bytes)-1], message)
+	log.D("Received: ", *message)
 
 	var id uint64
 	if message.ID == constants.ID_NOT_ASSIGNED {
@@ -75,32 +48,15 @@ func (m *Manager) handleMessage(message *constants.NodeToManagerJSON) *constants
 		log.D("Receieved new sample from ID", id, ", value= ", message.SampleValue)
 		return nil
 	}
-	resp := new(constants.ManagerToNodeJSON)
+	response := new(constants.ManagerToNodeJSON)
 	m.updateNodeLocation(id, message.Latitude, message.Longitude)
-	resp.PerformSample = true
-	resp.AssignedID = id
-	resp.NextCheckin = 2
-	return resp
-
-}
-
-func (m *Manager) send(response *constants.ManagerToNodeJSON, conn net.Conn) {
-	messageJSON, err := json.Marshal(response)
+	response.PerformSample = true
+	response.AssignedID = id
+	response.NextCheckin = 2
+	responseBytes, err := json.Marshal(response)
 	if err != nil {
 		panic(err.Error())
 	}
-	conn.Write(messageJSON)
-	conn.Write(constants.DelimJSON)
-	log.D("Sent: ", *response)
-}
-func (m *Manager) recvFrom(conn net.Conn) (*constants.NodeToManagerJSON, error) {
-	bytes, err := bufio.NewReader(conn).ReadBytes(constants.DelimJSON[0])
-	if err != nil {
-		return nil, err
-	}
-
-	data := new(constants.NodeToManagerJSON)
-	json.Unmarshal(bytes[:len(bytes)-1], data)
-	log.D("Received: ", *data)
-	return data, nil
+	log.D("Sending: ", *response)
+	return responseBytes
 }

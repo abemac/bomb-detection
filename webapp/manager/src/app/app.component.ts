@@ -15,8 +15,8 @@ export class AppComponent {
       this.context = this.canvas.getContext('2d');
       this.drawGrid()
       this.drawNode(50,50)
-      this.colorSection(3,3,20)
-      this.colorSection(5,2,40)
+      this.colorSection(3,3,.4)
+      this.colorSection(5,2,.2)
       
     }
 
@@ -45,7 +45,7 @@ export class AppComponent {
     }
 
     colorSection(r:number,c:number,intensity:number){
-      this.context.fillStyle="hsla(260,100%,43%,"+intensity+"%)"
+      this.context.fillStyle="hsla(260,100%,43%,"+intensity.toString()+")"
       this.context.fillRect(r*50+1,c*50+1,48,48)
 
     }

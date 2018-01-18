@@ -7,10 +7,10 @@ import (
 )
 
 type node struct {
-	value          int
-	latitude       float64
-	longitude      float64
-	superNode      bool
+	Value          int
+	Latitude       float64
+	Longitude      float64
+	SuperNode      bool
 	lastSampleTime int64 //unix timestamp
 	mutex          *sync.RWMutex
 }
@@ -51,8 +51,8 @@ func (m *Manager) updateNodeLocation(id uint64, latitude float64, longitude floa
 	}
 	m.mapMutex.RUnlock()
 	n.mutex.Lock()
-	n.latitude = latitude
-	n.longitude = longitude
+	n.Latitude = latitude
+	n.Longitude = longitude
 	n.mutex.Unlock()
 
 }
@@ -75,7 +75,7 @@ func (m *Manager) periodicallyPrintNodes(sleepTime int) {
 
 func (n *node) updateValue(newSample int) {
 	n.mutex.Lock()
-	n.value = newSample
+	n.Value = newSample
 	n.lastSampleTime = time.Now().Unix()
 	n.mutex.Unlock()
 }
