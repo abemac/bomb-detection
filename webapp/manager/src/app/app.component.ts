@@ -45,7 +45,7 @@ export class AppComponent {
     }
 
     colorSection(r:number,c:number,intensity:number){
-      this.context.fillStyle="hsla(280,100%,43%,"+intensity+"%)"
+      this.context.fillStyle="hsla(260,100%,43%,"+intensity+"%)"
       this.context.fillRect(r*50+1,c*50+1,48,48)
 
     }
