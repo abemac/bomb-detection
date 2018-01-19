@@ -1,5 +1,5 @@
 import { Component,ViewChild,ElementRef,AfterViewInit } from '@angular/core';
-
+import {HttpClient} from '@angular/common/http'
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -10,6 +10,7 @@ export class AppComponent {
     @ViewChild('canvas') c :ElementRef;
     private context: CanvasRenderingContext2D;
     private canvas: HTMLCanvasElement;
+    
     ngAfterViewInit() {
       this.canvas=(this.c.nativeElement as HTMLCanvasElement)
       this.context = this.canvas.getContext('2d');
@@ -17,7 +18,12 @@ export class AppComponent {
       this.drawNode(50,50)
       this.colorSection(3,3,.4)
       this.colorSection(5,2,.2)
+      this.getNodes()
       
+    }
+
+    constructor(private http:HttpClient){
+
     }
 
     drawGrid() {
@@ -51,6 +57,12 @@ export class AppComponent {
     }
     getRandomColor() {
       //see https://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
+    }
+
+    getNodes(){
+      this.http.get('http://localhost:8080/GetNodes').toPromise().then( resp =>{
+        console.log(resp)
+      })
     }
 }
 

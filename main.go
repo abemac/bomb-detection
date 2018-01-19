@@ -15,7 +15,7 @@ func main() {
 	flag.Parse()
 	constants.LOG_LEVEL = *loglevel
 
-	nodesim.CreateNodes(10)
+	nodesim.CreateNodes(10000)
 	m := manager.NewManager()
 	m.Run()
 }

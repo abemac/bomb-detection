@@ -40,15 +40,29 @@ func NewWebAPI(mgr *Manager) *WebAPI {
 // }
 
 func (w *WebAPI) setup() {
+	http.Handle("/", http.FileServer(http.Dir("./webapp/manager/dist/")))
 	http.HandleFunc("/GetNodes", w.handleNodeInfoRequest)
-	go http.ListenAndServe(":8080", nil)
+
+}
+
+func (w *WebAPI) Run() {
+	http.ListenAndServe(":8080", nil)
 }
 
 func (w *WebAPI) handleNodeInfoRequest(resp http.ResponseWriter, req *http.Request) {
-	//Create json marshaller
-	fmt.Fprintf(resp, `"nodes":{`)
-	// for k, v := range w.mgr.nodes {
-	// }
+	fmt.Fprintf(resp, `{"nodes":[`)
+	w.mgr.mapMutex.RLock()
+	first := true
+	for k, v := range w.mgr.nodes {
+		if !first {
+			fmt.Fprintf(resp, ",")
+		} else {
+			first = false
+		}
+		fmt.Fprintf(resp, `{"id":%d,"latitude":%f,"longitude":%f}`, k, v.Latitude, v.Longitude)
+	}
+	fmt.Fprintf(resp, "]}")
+	w.mgr.mapMutex.RUnlock()
 }
 
 func (n *node) MarshalJSON() ([]byte, error) {
