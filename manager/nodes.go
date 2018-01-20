@@ -47,7 +47,7 @@ func (m *Manager) updateNodeLocation(id uint64, latitude float64, longitude floa
 	m.mapMutex.RLock()
 	n, ok := m.nodes[id]
 	if !ok {
-		panic("AHHH")
+		panic("AHHH") //nodes already assigned ID but manager crashed possibly
 	}
 	m.mapMutex.RUnlock()
 	n.mutex.Lock()

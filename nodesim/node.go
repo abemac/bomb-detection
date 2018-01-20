@@ -19,18 +19,18 @@ type Node struct {
 }
 
 //NewNode creates a new Node
-func NewNode() {
+func NewNode(ip string) {
 	n := new(Node)
-	n.managerIP = "127.0.0.1"
+	n.managerIP = ip
 	n.managerPort = 12345
 	n.assignedID = constants.ID_NOT_ASSIGNED
 	go n.mainLoop()
 	log.V("New Node created")
 }
-func CreateNodes(number uint64) {
+func CreateNodes(number uint64, ip string) {
 	var i uint64
 	for i = 0; i < number; i++ {
-		NewNode()
+		NewNode(ip)
 	}
 	log.I(number, "new nodes created, they are active")
 }
