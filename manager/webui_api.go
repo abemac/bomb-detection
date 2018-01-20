@@ -17,7 +17,7 @@ func NewWebUI(mgr *Manager) *WebUI {
 }
 
 func (w *WebUI) setup() {
-	http.Handle("/", http.FileServer(http.Dir("./webapp/manager/dist/")))
+	http.Handle("/", http.FileServer(http.Dir("../webapp/manager/dist/")))
 	http.HandleFunc("/GetNodes", w.handleNodeInfoRequest)
 
 }
