@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"sync"
 
 	"github.com/abemac/bomb-detection/constants"
 	"github.com/abemac/bomb-detection/logger"
@@ -15,6 +16,8 @@ func main() {
 	flag.Parse()
 	constants.LOG_LEVEL = *loglevel
 	nodesim.CreateNodes(10000, *ip)
-	done := make(chan bool)
-	<-done
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	wg.Wait()
+
 }

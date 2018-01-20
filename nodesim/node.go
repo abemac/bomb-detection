@@ -142,5 +142,5 @@ func (n *Node) sample() int {
 	return rand.Intn(100)
 }
 func (n *Node) getGPSLoc() (float64, float64) {
-	return rand.Float64(), rand.Float64()
+	return rand.Float64()*180 - 90, rand.Float64()*360 - 180
 }

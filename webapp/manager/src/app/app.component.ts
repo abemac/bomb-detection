@@ -11,11 +11,13 @@ export class AppComponent {
     private context: CanvasRenderingContext2D;
     private canvas: HTMLCanvasElement;
     
+    private canvasWidth: number = 400
+    private canvasHeight:number = 400
+
     ngAfterViewInit() {
       this.canvas=(this.c.nativeElement as HTMLCanvasElement)
       this.context = this.canvas.getContext('2d');
       this.drawGrid()
-      this.drawNode(50,50)
       this.colorSection(3,3,.4)
       this.colorSection(5,2,.2)
       this.getNodes()
@@ -61,7 +63,10 @@ export class AppComponent {
 
     getNodes(){
       this.http.get('http://localhost:8080/GetNodes').toPromise().then( resp =>{
-        console.log(resp)
+        this.context.translate(this.canvasWidth/2,this.canvasHeight/2)
+        for(var i=0;i<resp['nodes'].length;i++){
+          this.drawNode(resp['nodes'][i].longitude,resp['nodes'][i].latitude)
+        }
       })
     }
 }

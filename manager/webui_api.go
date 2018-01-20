@@ -3,6 +3,7 @@ package manager
 import (
 	"fmt"
 	"net/http"
+	"os"
 )
 
 type WebUI struct {
@@ -17,7 +18,7 @@ func NewWebUI(mgr *Manager) *WebUI {
 }
 
 func (w *WebUI) setup() {
-	http.Handle("/", http.FileServer(http.Dir("../webapp/manager/dist/")))
+	http.Handle("/", http.FileServer(http.Dir(os.Getenv("GOPATH")+"/src/github.com/abemac/bomb-detection/webapp/manager/dist/")))
 	http.HandleFunc("/GetNodes", w.handleNodeInfoRequest)
 
 }

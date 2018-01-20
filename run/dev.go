@@ -15,7 +15,7 @@ func main() {
 	flag.Parse()
 	constants.LOG_LEVEL = *loglevel
 
-	nodesim.CreateNodes(1000, "127.0.0.1")
+	nodesim.CreateNodes(50, "127.0.0.1")
 	m := manager.NewManager()
 	m.Run()
 }
