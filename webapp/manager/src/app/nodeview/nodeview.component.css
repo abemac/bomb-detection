@@ -1,0 +1,10 @@
+.canvas{
+    margin: 80px;
+    float:right;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+.mainwrapper{
+    text-align: center;
+}
