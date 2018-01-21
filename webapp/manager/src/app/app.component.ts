@@ -1,5 +1,7 @@
 import { Component,ViewChild,ElementRef,AfterViewInit } from '@angular/core';
 import {HttpClient} from '@angular/common/http'
+import {NODEDATA} from './util/types'
+import { ApiService } from './services/api.service';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -10,21 +12,31 @@ export class AppComponent {
     @ViewChild('canvas') c :ElementRef;
     private context: CanvasRenderingContext2D;
     private canvas: HTMLCanvasElement;
-    
+
     private canvasWidth: number = 400
     private canvasHeight:number = 400
+
+    private nodeData : NODEDATA[]
+    private blockCounts: number[][]
 
     ngAfterViewInit() {
       this.canvas=(this.c.nativeElement as HTMLCanvasElement)
       this.context = this.canvas.getContext('2d');
       this.drawGrid()
-      this.colorSection(3,3,.4)
-      this.colorSection(5,2,.2)
-      this.getNodes()
       
+      this.fetchNodes()
+
     }
 
-    constructor(private http:HttpClient){
+    constructor(private api: ApiService){
+      this.blockCounts=new Array<Array<number>>()
+      for(var r=0;r*50<this.canvasHeight;r++){
+        var row :number[]=new Array<number>()
+        for(var c=0;c*50<this.canvasWidth;c++){
+          row.push(0)
+        }
+        this.blockCounts.push(row)
+      }
 
     }
 
@@ -52,22 +64,51 @@ export class AppComponent {
       this.context.fill()
     }
 
-    colorSection(r:number,c:number,intensity:number){
-      this.context.fillStyle="hsla(260,100%,43%,"+intensity.toString()+")"
-      this.context.fillRect(r*50+1,c*50+1,48,48)
+    colorSections(){
+      var intensity=0
+      for(var r=0;r*50<this.canvasHeight;r++){
+        for(var c=0;c*50<this.canvasWidth;c++){
+          intensity=Math.min(this.blockCounts[r][c],1)
+          this.context.fillStyle="hsla(260,100%,43%,"+intensity.toString()+")"
+          this.context.fillRect(c*50+1,r*50+1,48,48)
+
+          
+        }
+      }
+      
+    }
+
+    drawNodes(){
+      this.context.save()
+      this.context.translate(this.canvasWidth/2,this.canvasHeight/2)
+      for(var i=0;i<this.nodeData.length;i++){
+        this.drawNode(this.nodeData[i].longitude,this.nodeData[i].latitude)
+      }
+      this.context.restore()
 
     }
     getRandomColor() {
       //see https://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
     }
-
-    getNodes(){
-      this.http.get('http://localhost:8080/GetNodes').toPromise().then( resp =>{
-        this.context.translate(this.canvasWidth/2,this.canvasHeight/2)
-        for(var i=0;i<resp['nodes'].length;i++){
-          this.drawNode(resp['nodes'][i].longitude,resp['nodes'][i].latitude)
+    updateBlockCounts(){
+      for(var r=0;r*50<this.canvasHeight;r++){
+        for(var c=0;c*50<this.canvasWidth;c++){
+          this.blockCounts[r][c]=0
         }
+      }
+      for(let node of this.nodeData){
+        var row=Math.floor((this.canvasWidth/2+node.latitude)/50)
+        var col=Math.floor((this.canvasHeight/2+node.longitude)/50)
+        this.blockCounts[row][col]+=.1
+      }
+    }
+    fetchNodes(){
+      this.api.getNodes().then(data=>{
+        this.nodeData=data
+        this.updateBlockCounts()
+        this.colorSections()
+        this.drawNodes()
       })
     }
+    
 }
-
