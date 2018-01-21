@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {HttpClient} from '@angular/common/http'
-import {NODEDATA} from '../util/types'
+import {NODEDATA} from './types'
 @Injectable()
 export class ApiService {
 
