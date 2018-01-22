@@ -18,7 +18,14 @@ export class NodeViewComponent implements OnInit {
   private nodeData : NODEDATA[]
   private blockIntensites: number[][]
 
+  private scale : number=1
+
+  private centerlat : number;
+  private centerlong : number;
+
   constructor(private api: ApiService){
+    this.centerlat=this.canvasHeightPixels/2-100
+    this.centerlong=this.canvasWidthPixels/2
     this.blockIntensites=new Array<Array<number>>()
     for(var r=0;r*this.blockSizePixels<this.canvasHeightPixels;r++){
       var row :number[]=new Array<number>()
@@ -61,7 +68,7 @@ export class NodeViewComponent implements OnInit {
     this.context.fillStyle="hsl(120, 100%, 50%)"
     this.context.strokeStyle="hsl(120, 100%, 50%)"
     this.context.beginPath()
-    this.context.arc(x,y,4,0,2*Math.PI)
+    this.context.arc(x,y,4/this.scale,0,2*Math.PI)
     this.context.fill()
   }
 
@@ -78,7 +85,9 @@ export class NodeViewComponent implements OnInit {
 
   drawNodes(){
     this.context.save()
-    this.context.translate(this.canvasWidthPixels/2,this.canvasHeightPixels/2)
+    this.context.translate(this.centerlong,this.centerlat)
+    this.context.scale(this.scale,this.scale)
+    
     for(var i=0;i<this.nodeData.length;i++){
       this.drawNode(this.nodeData[i].longitude,this.nodeData[i].latitude)
     }
@@ -97,10 +106,16 @@ export class NodeViewComponent implements OnInit {
       }
     }
     for(let node of this.nodeData){
-      var rowi=Math.floor((this.canvasHeightPixels/2+node.latitude)/this.blockSizePixels)
-      var coli=Math.floor((this.canvasWidthPixels/2+node.longitude)/this.blockSizePixels)
-      this.blockIntensites[rowi][coli]+=this.purpleIntensityPerNode
+      var rowi=Math.floor((this.centerlat+node.latitude*this.scale)/this.blockSizePixels)
+      var coli=Math.floor((this.centerlong+node.longitude*this.scale)/this.blockSizePixels)
+      
+      if(this.blockIntensites[rowi] != undefined){
+        if(this.blockIntensites[rowi][coli]!=undefined){
+          this.blockIntensites[rowi][coli]+=this.purpleIntensityPerNode
+        }
+      }
     }
+    
   }
 
   update(){
@@ -113,13 +128,15 @@ export class NodeViewComponent implements OnInit {
   updateView(){
     this.context.clearRect(0,0,this.canvasWidthPixels,this.canvasHeightPixels)
     this.drawGrid()
+    
     this.updateBlockCounts()
     this.colorSections()
     this.drawNodes()
+    
+    
   }
   onSliderChange(event) {
     this.blockSizePixels = event.value;
-    console.log(this.blockSizePixels)
     this.blockIntensites=new Array<Array<number>>()
     for(var r=0;r*this.blockSizePixels<this.canvasHeightPixels;r++){
       var row :number[]=new Array<number>()
@@ -130,6 +147,18 @@ export class NodeViewComponent implements OnInit {
     }
     this.updateView()
     
+  }
+  onMouseWheelUp(event){
+    if(this.scale)
+    this.scale*=1.2
+    this.updateView()
+  }
+  onMouseWheelDown(event){
+    if(this.scale>.4){ 
+      this.scale/=1.2
+      this.updateView()
+    }
+   
   }
 
 }

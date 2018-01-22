@@ -1,4 +1,20 @@
 <div class="mainwrapper" style="text-align:center;">
-       <canvas class="canvas" #canvas width="{{canvasWidthPixels}}" height="{{canvasHeightPixels}}" style="border:5px solid black"></canvas>
-       <mat-slider [max]=100 [min]=10 [(ngModel)]="blockSizePixels" (input)="onSliderChange($event)"></mat-slider>
+       <canvas class="canvas"
+              #canvas width="{{canvasWidthPixels}}" 
+              height="{{canvasHeightPixels}}" 
+              style="border:5px solid black"
+              mouseWheel
+              (mouseWheelUp)="onMouseWheelUp(event)"
+              (mouseWheelDown)="onMouseWheelDown(event)">
+            </canvas>
+       <p class="settings-label">Block Size</p>
+        <mat-slider 
+          [max]=100
+          [min]=10 
+          [(ngModel)]="blockSizePixels" 
+          (input)="onSliderChange($event)"
+          [thumbLabel]=true>
+        </mat-slider>
+       
+      
 </div>
