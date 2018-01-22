@@ -20,12 +20,12 @@ export class NodeViewComponent implements OnInit {
 
   private scale : number=1
 
-  private centerlat : number;
-  private centerlong : number;
+  private focuslat : number;
+  private focuslong : number;
 
   constructor(private api: ApiService){
-    this.centerlat=this.canvasHeightPixels/2-100
-    this.centerlong=this.canvasWidthPixels/2
+    this.focuslat=this.canvasHeightPixels/2
+    this.focuslong=this.canvasWidthPixels/2
     this.blockIntensites=new Array<Array<number>>()
     for(var r=0;r*this.blockSizePixels<this.canvasHeightPixels;r++){
       var row :number[]=new Array<number>()
@@ -85,8 +85,15 @@ export class NodeViewComponent implements OnInit {
 
   drawNodes(){
     this.context.save()
-    this.context.translate(this.centerlong,this.centerlat)
+    this.context.translate(this.focuslong,this.focuslat)
     this.context.scale(this.scale,this.scale)
+    this.context.translate(this.canvasWidthPixels/2-this.focuslong,this.canvasHeightPixels/2-this.focuslat)
+    //this.context.translate(this.focuslong,this.focuslat)
+    //this.context.translate(this.canvasWidthPixels/2,this.canvasHeightPixels/2)
+    
+    //this.context.translate((this.canvasWidthPixels/2-this.focuslong)/this.scale,(this.canvasHeightPixels/2-this.focuslat)/this.scale)
+    //this.context.tra
+  
     
     for(var i=0;i<this.nodeData.length;i++){
       this.drawNode(this.nodeData[i].longitude,this.nodeData[i].latitude)
@@ -106,8 +113,8 @@ export class NodeViewComponent implements OnInit {
       }
     }
     for(let node of this.nodeData){
-      var rowi=Math.floor((this.centerlat+node.latitude*this.scale)/this.blockSizePixels)
-      var coli=Math.floor((this.centerlong+node.longitude*this.scale)/this.blockSizePixels)
+      var rowi=Math.floor((this.focuslat+(node.latitude+this.canvasHeightPixels/2-this.focuslat)*this.scale)/this.blockSizePixels)
+      var coli=Math.floor((this.focuslong+(node.longitude+this.canvasWidthPixels/2-this.focuslong)*this.scale)/this.blockSizePixels)
       
       if(this.blockIntensites[rowi] != undefined){
         if(this.blockIntensites[rowi][coli]!=undefined){
@@ -149,13 +156,16 @@ export class NodeViewComponent implements OnInit {
     
   }
   onMouseWheelUp(event){
-    if(this.scale)
     this.scale*=1.2
+    this.focuslong=event.offsetX
+    this.focuslat=event.offsetY
     this.updateView()
   }
   onMouseWheelDown(event){
     if(this.scale>.4){ 
       this.scale/=1.2
+      this.focuslong=event.offsetX
+      this.focuslat=event.offsetY
       this.updateView()
     }
    

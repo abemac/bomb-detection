@@ -4,8 +4,8 @@
               height="{{canvasHeightPixels}}" 
               style="border:5px solid black"
               mouseWheel
-              (mouseWheelUp)="onMouseWheelUp(event)"
-              (mouseWheelDown)="onMouseWheelDown(event)">
+              (mouseWheelUp)="onMouseWheelUp($event)"
+              (mouseWheelDown)="onMouseWheelDown($event)">
             </canvas>
        <p class="settings-label">Block Size</p>
         <mat-slider 
