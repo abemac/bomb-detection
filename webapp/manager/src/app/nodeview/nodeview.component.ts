@@ -22,6 +22,8 @@ export class NodeViewComponent implements OnInit {
   private oldscale : number=1
   private focusy : number;
   private focusx : number;
+  private trx : number=this.canvasWidthPixels/2
+  private try: number=this.canvasHeightPixels/2
 
   constructor(private api: ApiService){
     this.focusy=this.canvasHeightPixels/2
@@ -82,8 +84,7 @@ export class NodeViewComponent implements OnInit {
       }
     }  
   }
-  private trx : number=this.canvasWidthPixels/2
-  private try: number=this.canvasHeightPixels/2
+  
   drawNodes(){
     this.context.save()
     this.context.translate(this.trx,this.try)
@@ -127,10 +128,9 @@ export class NodeViewComponent implements OnInit {
 
   updateView(){
     this.context.clearRect(0,0,this.canvasWidthPixels,this.canvasHeightPixels)
-    var focuslong=(this.focusx-this.trx)/this.oldscale
-    var focuslat=(this.focusy-this.try)/this.oldscale
-    this.trx=this.focusx-focuslong*this.scale
-    this.try=this.focusy-focuslat*this.scale
+    var ratio=this.scale/this.oldscale
+    this.trx=this.trx*ratio+this.focusx*(1-ratio)
+    this.try=this.try*ratio+this.focusy*(1-ratio)
     
     this.drawGrid()
     
