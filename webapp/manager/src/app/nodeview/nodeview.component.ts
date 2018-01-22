@@ -19,13 +19,13 @@ export class NodeViewComponent implements OnInit {
   private blockIntensites: number[][]
 
   private scale : number=1
-
-  private focuslat : number;
-  private focuslong : number;
+  private oldscale : number=1
+  private focusy : number;
+  private focusx : number;
 
   constructor(private api: ApiService){
-    this.focuslat=this.canvasHeightPixels/2
-    this.focuslong=this.canvasWidthPixels/2
+    this.focusy=this.canvasHeightPixels/2
+    this.focusx=this.canvasWidthPixels/2
     this.blockIntensites=new Array<Array<number>>()
     for(var r=0;r*this.blockSizePixels<this.canvasHeightPixels;r++){
       var row :number[]=new Array<number>()
@@ -82,19 +82,12 @@ export class NodeViewComponent implements OnInit {
       }
     }  
   }
-
+  private trx : number=this.canvasWidthPixels/2
+  private try: number=this.canvasHeightPixels/2
   drawNodes(){
     this.context.save()
-    this.context.translate(this.focuslong,this.focuslat)
+    this.context.translate(this.trx,this.try)
     this.context.scale(this.scale,this.scale)
-    this.context.translate(this.canvasWidthPixels/2-this.focuslong,this.canvasHeightPixels/2-this.focuslat)
-    //this.context.translate(this.focuslong,this.focuslat)
-    //this.context.translate(this.canvasWidthPixels/2,this.canvasHeightPixels/2)
-    
-    //this.context.translate((this.canvasWidthPixels/2-this.focuslong)/this.scale,(this.canvasHeightPixels/2-this.focuslat)/this.scale)
-    //this.context.tra
-  
-    
     for(var i=0;i<this.nodeData.length;i++){
       this.drawNode(this.nodeData[i].longitude,this.nodeData[i].latitude)
     }
@@ -113,8 +106,8 @@ export class NodeViewComponent implements OnInit {
       }
     }
     for(let node of this.nodeData){
-      var rowi=Math.floor((this.focuslat+(node.latitude+this.canvasHeightPixels/2-this.focuslat)*this.scale)/this.blockSizePixels)
-      var coli=Math.floor((this.focuslong+(node.longitude+this.canvasWidthPixels/2-this.focuslong)*this.scale)/this.blockSizePixels)
+      var rowi=Math.floor((this.try+node.latitude*this.scale)/this.blockSizePixels)
+      var coli=Math.floor((this.trx+node.longitude*this.scale)/this.blockSizePixels)
       
       if(this.blockIntensites[rowi] != undefined){
         if(this.blockIntensites[rowi][coli]!=undefined){
@@ -134,11 +127,19 @@ export class NodeViewComponent implements OnInit {
 
   updateView(){
     this.context.clearRect(0,0,this.canvasWidthPixels,this.canvasHeightPixels)
+    var focuslong=(this.focusx-this.trx)/this.oldscale
+    var focuslat=(this.focusy-this.try)/this.oldscale
+    this.trx=this.focusx-focuslong*this.scale
+    this.try=this.focusy-focuslat*this.scale
+    
     this.drawGrid()
     
     this.updateBlockCounts()
     this.colorSections()
     this.drawNodes()
+    
+    this.oldscale=this.scale
+    
     
     
   }
@@ -157,15 +158,15 @@ export class NodeViewComponent implements OnInit {
   }
   onMouseWheelUp(event){
     this.scale*=1.2
-    this.focuslong=event.offsetX
-    this.focuslat=event.offsetY
+    this.focusx=event.offsetX
+    this.focusy=event.offsetY
     this.updateView()
   }
   onMouseWheelDown(event){
     if(this.scale>.4){ 
       this.scale/=1.2
-      this.focuslong=event.offsetX
-      this.focuslat=event.offsetY
+      this.focusx=event.offsetX
+      this.focusy=event.offsetY
       this.updateView()
     }
    
