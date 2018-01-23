@@ -12,7 +12,6 @@ type Manager struct {
 	nodes              map[uint64]*node
 	lastAssignedNodeID uint64
 	mapMutex           *sync.RWMutex
-	idMutex            *sync.Mutex
 }
 
 //NewManager creates a new Manager
@@ -21,7 +20,6 @@ func NewManager() *Manager {
 	m.nodes = make(map[uint64]*node)
 	m.lastAssignedNodeID = 0
 	m.mapMutex = new(sync.RWMutex)
-	m.idMutex = new(sync.Mutex)
 	return m
 }
 
@@ -40,7 +38,7 @@ func (m *Manager) handleMessage(bytes []byte) []byte {
 	if message.ID == constants.ID_NOT_ASSIGNED {
 		id = m.newNode()
 	} else {
-		id = message.ID
+		id = m.checkIfIDValid(message.ID)
 	}
 
 	if message.SampleValid {

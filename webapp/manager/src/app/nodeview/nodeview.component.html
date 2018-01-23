@@ -1,11 +1,16 @@
 <div class="mainwrapper" style="text-align:center;">
-       <canvas class="canvas"
+       <canvas class="canvas {{handPtr}}"
               #canvas width="{{canvasWidthPixels}}" 
               height="{{canvasHeightPixels}}" 
               style="border:5px solid black"
-              mouseWheel
+              mouseListener
               (mouseWheelUp)="onMouseWheelUp($event)"
-              (mouseWheelDown)="onMouseWheelDown($event)">
+              (mouseWheelDown)="onMouseWheelDown($event)"
+              (mouseDown)="onMouseDown($event)"
+              (mouseUp)="onMouseUp($event)"
+              (mouseMove)="onMouseMove($event)"
+              (mouseOut)="onMouseOut($event)"
+              (mouseIn)="onMouseIn($event)">
             </canvas>
        <p class="settings-label">Block Size</p>
         <mat-slider 
