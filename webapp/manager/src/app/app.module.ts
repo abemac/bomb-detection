@@ -13,14 +13,14 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {MatCardModule} from '@angular/material/card';
 import {MatInputModule} from '@angular/material/input';
 import {MatFormFieldModule} from '@angular/material/form-field';
-import { MouseWheelDirective } from './mousewheel.directive';
+import { MouseListenerDirective } from './mouselistener.directive';
 
 
 @NgModule({
   declarations: [
     AppComponent,
     NodeViewComponent,
-    MouseWheelDirective
+    MouseListenerDirective
   ],
   imports: [
     BrowserModule,

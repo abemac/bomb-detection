@@ -163,13 +163,56 @@ export class NodeViewComponent implements OnInit {
     this.updateView()
   }
   onMouseWheelDown(event){
-    if(this.scale>.4){ 
+    if(this.scale>1){ 
       this.scale/=1.2
       this.focusx=event.offsetX
       this.focusy=event.offsetY
       this.updateView()
+    }else{
+      this.scale=1
     }
    
+  }
+
+  private mouseDown :boolean=false
+  private handPtr : string="default-cursor"
+  private startX: number
+  private startY: number
+
+  onMouseDown(event){
+    this.mouseDown=true
+    this.handPtr="grab-cursor"
+    this.startX=event.offsetX
+    this.startY=event.offsetY
+  }
+  onMouseUp(event){
+    this.mouseDown=false
+    this.handPtr="default-cursor"
+  }
+  onMouseMove(event){
+    if(this.mouseDown){
+      var dx = event.offsetX - this.startX
+      var dy = event.offsetY - this.startY
+      if(Math.abs(dx)>2 || Math.abs(dy) >2){
+        this.trx+=dx
+        this.try+=dy
+        this.updateView()
+        this.startX=event.offsetX
+        this.startY=event.offsetY
+      }
+      
+    }
+  }
+  onMouseOut(event){
+    this.mouseDown=false
+    this.handPtr="default-cursor"
+  }
+  onMouseIn(event){
+    if(event.button==0 && event.buttons==1){
+      this.mouseDown=true
+      this.handPtr="grab-cursor"
+    }
+    
   }
 
 }
