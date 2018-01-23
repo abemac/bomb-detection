@@ -129,11 +129,12 @@ export class NodeViewComponent implements OnInit {
   updateView(){
     this.context.clearRect(0,0,this.canvasWidthPixels,this.canvasHeightPixels)
     var ratio=this.scale/this.oldscale
-    this.trx=this.trx*ratio+this.focusx*(1-ratio)
-    this.try=this.try*ratio+this.focusy*(1-ratio)
-    
+    this.trx=this.focusx+(this.trx-this.focusx)*ratio
+    this.try=this.focusy+(this.try-this.focusy)*ratio
+    //ALT
+    //this.trx=this.trx*ratio+this.focusx*(1-ratio)
+    //this.try=this.try*ratio+this.focusy*(1-ratio)
     this.drawGrid()
-    
     this.updateBlockCounts()
     this.colorSections()
     this.drawNodes()
