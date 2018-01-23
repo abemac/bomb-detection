@@ -1,25 +1,27 @@
-<div class="mainwrapper" style="text-align:center;">
-       <canvas class="canvas {{handPtr}}"
-              #canvas width="{{canvasWidthPixels}}" 
-              height="{{canvasHeightPixels}}" 
-              style="border:5px solid black"
-              mouseListener
-              (mouseWheelUp)="onMouseWheelUp($event)"
-              (mouseWheelDown)="onMouseWheelDown($event)"
-              (mouseDown)="onMouseDown($event)"
-              (mouseUp)="onMouseUp($event)"
-              (mouseMove)="onMouseMove($event)"
-              (mouseOut)="onMouseOut($event)"
-              (mouseIn)="onMouseIn($event)">
-            </canvas>
-       <p class="settings-label">Block Size</p>
-        <mat-slider 
-          [max]=100
-          [min]=10 
-          [(ngModel)]="blockSizePixels" 
-          (input)="onSliderChange($event)"
-          [thumbLabel]=true>
-        </mat-slider>
-       
-      
+<div class="mainwrapper">
+  <div class="right">
+    <canvas class="{{handPtr}}"
+      #canvas width="{{canvasWidthPixels}}" 
+      height="{{canvasHeightPixels}}" 
+      style="border:5px solid black"
+      mouseListener
+      (mouseWheelUp)="onMouseWheelUp($event)"
+      (mouseWheelDown)="onMouseWheelDown($event)"
+      (mouseDown)="onMouseDown($event)"
+      (mouseUp)="onMouseUp($event)"
+      (mouseMove)="onMouseMove($event)"
+      (mouseOut)="onMouseOut($event)"
+      (mouseIn)="onMouseIn($event)">
+    </canvas>
+  </div>
+  <div class="left">
+    <p class="settings-label">Block Size</p>
+    <mat-slider 
+      [max]=100
+      [min]=10 
+      [(ngModel)]="blockSizePixels" 
+      (input)="onSliderChange($event)"
+      [thumbLabel]=true>
+    </mat-slider>
+  </div>
 </div>

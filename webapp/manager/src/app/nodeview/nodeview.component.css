@@ -1,12 +1,7 @@
-.canvas{
-    float:right;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-}
 .mainwrapper{
-    text-align: center;
-    margin:80px;
+    display:grid;
+    grid-template-columns: auto auto auto;
+    align-content: center;
 }
 .settings-label{
     color:#7a7a7a;
@@ -17,4 +12,12 @@
 }
 .default-cursor{
     cursor:default;
+}
+.left{
+    grid-column: 1;
+    margin:auto
+}
+.right{
+    grid-column: 2;
+    margin: auto;
 }
