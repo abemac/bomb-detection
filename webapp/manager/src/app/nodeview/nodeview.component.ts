@@ -1,4 +1,4 @@
-import { Component, OnInit,ViewChild,ElementRef,AfterViewInit  } from '@angular/core';
+import { Component,ViewChild,ElementRef,AfterViewInit  } from '@angular/core';
 import {NODEDATA} from '../types'
 import { ApiService } from '../api.service';
 @Component({
@@ -6,7 +6,7 @@ import { ApiService } from '../api.service';
   templateUrl: './nodeview.component.html',
   styleUrls: ['./nodeview.component.css']
 })
-export class NodeViewComponent implements OnInit {
+export class NodeViewComponent implements AfterViewInit {
   
   @ViewChild('canvas') c :ElementRef;
   private context: CanvasRenderingContext2D;
@@ -15,7 +15,6 @@ export class NodeViewComponent implements OnInit {
   private canvasHeightPixels:number = window.innerHeight-250
   private blockSizePixels:number=25
   private purpleIntensityPerNode=.1
-  private nodeData : NODEDATA[]
   private blockIntensites: number[][]
 
   private scale : number=1
@@ -24,6 +23,11 @@ export class NodeViewComponent implements OnInit {
   private focusx : number;
   private trx : number=this.canvasWidthPixels/2
   private try: number=this.canvasHeightPixels/2
+
+  private autorefresh:boolean;
+  protected refreshThreadHandle : any;
+
+  private drawgrid: boolean=true;
 
   constructor(private api: ApiService){
     this.focusy=this.canvasHeightPixels/2
@@ -36,11 +40,6 @@ export class NodeViewComponent implements OnInit {
       }
       this.blockIntensites.push(row)
     }
-  }
-
-  ngOnInit() {
-    
-    
   }
   
   ngAfterViewInit() {
@@ -89,8 +88,8 @@ export class NodeViewComponent implements OnInit {
     this.context.save()
     this.context.translate(this.trx,this.try)
     this.context.scale(this.scale,this.scale)
-    for(var i=0;i<this.nodeData.length;i++){
-      this.drawNode(this.nodeData[i].longitude,this.nodeData[i].latitude)
+    for(var i=0;i<this.api.nodeData.length;i++){
+      this.drawNode(this.api.nodeData[i].longitude,this.api.nodeData[i].latitude)
     }
     this.context.restore()
   }
@@ -106,7 +105,7 @@ export class NodeViewComponent implements OnInit {
         this.blockIntensites[r][c]=0
       }
     }
-    for(let node of this.nodeData){
+    for(let node of this.api.nodeData){
       var rowi=Math.floor((this.try+node.latitude*this.scale)/this.blockSizePixels)
       var coli=Math.floor((this.trx+node.longitude*this.scale)/this.blockSizePixels)
       
@@ -120,23 +119,40 @@ export class NodeViewComponent implements OnInit {
   }
 
   update(){
-    this.api.getNodes().then(data=>{
-      this.nodeData=data
+    this.api.updateNodes().then(data=>{
       this.updateView()
     });
   }
 
+  onRefreshToggle(event){
+    if(event.checked){
+      this.autorefresh=true;
+      this.refreshThreadHandle = setInterval(() => {this.update();},1000);
+    }else{
+      this.autorefresh=false;
+      clearInterval(this.refreshThreadHandle);
+    }
+  }
+  toggleGrid(){
+    
+  }
   updateView(){
     this.context.clearRect(0,0,this.canvasWidthPixels,this.canvasHeightPixels)
+    
     var ratio=this.scale/this.oldscale
     this.trx=this.focusx+(this.trx-this.focusx)*ratio
     this.try=this.focusy+(this.try-this.focusy)*ratio
     //ALT
     //this.trx=this.trx*ratio+this.focusx*(1-ratio)
     //this.try=this.try*ratio+this.focusy*(1-ratio)
-    this.drawGrid()
-    this.updateBlockCounts()
-    this.colorSections()
+    if(this.drawgrid){
+      this.drawGrid()
+      this.updateBlockCounts()
+      this.colorSections()
+    }else{
+      this.context.fillStyle="ghostwhite"
+      this.context.fillRect(0,0,this.canvasWidthPixels,this.canvasHeightPixels)
+    }
     this.drawNodes()
     
     this.oldscale=this.scale

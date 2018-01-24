@@ -1,5 +1,24 @@
 <div class="mainwrapper">
-  <div class="right">
+  <div class="top left">
+
+  </div>
+  <div class="top right">
+      <button mat-raised-button (click)="update()" class="item" [disabled]="autorefresh">Refresh</button>
+      <mat-slide-toggle class="item" (change)="onRefreshToggle($event)">Auto-Refresh</mat-slide-toggle>
+  </div>
+  <div class="bottom left">
+    <p class="settings-label">Block Size</p>
+    <mat-slider class="item"
+      [max]=100
+      [min]=10 
+      [(ngModel)]="blockSizePixels" 
+      (input)="onSliderChange($event)"
+      [thumbLabel]=true
+      [disabled]="!drawgrid">
+    </mat-slider>
+    <mat-checkbox class="item" [(ngModel)]="drawgrid" (change)="updateView()"><p class="settings-label">Show Grid</p></mat-checkbox>
+  </div>
+  <div class="bottom right">
     <canvas class="{{handPtr}}"
       #canvas width="{{canvasWidthPixels}}" 
       height="{{canvasHeightPixels}}" 
@@ -14,14 +33,5 @@
       (mouseIn)="onMouseIn($event)">
     </canvas>
   </div>
-  <div class="left">
-    <p class="settings-label">Block Size</p>
-    <mat-slider 
-      [max]=100
-      [min]=10 
-      [(ngModel)]="blockSizePixels" 
-      (input)="onSliderChange($event)"
-      [thumbLabel]=true>
-    </mat-slider>
-  </div>
+  
 </div>

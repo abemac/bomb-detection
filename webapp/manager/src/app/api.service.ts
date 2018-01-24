@@ -6,10 +6,11 @@ export class ApiService {
 
   constructor(private http:HttpClient) { }
 
-
-  getNodes():Promise<NODEDATA[]>{
+  public nodeData: NODEDATA[]
+  
+  updateNodes(){
     return this.http.get('http://localhost:8080/GetNodes').toPromise().then( resp =>{
-       return resp['nodes'] as NODEDATA[]
+      this.nodeData =resp['nodes'] as NODEDATA[]
      }).catch(err=>{
        return Promise.reject(err.message || err);
      })

@@ -1,0 +1,33 @@
+<div class="main-wrapper mat-elevation-z8">
+  <mat-table #table [dataSource]="dataSource">
+
+      <!--- Note that these columns can be defined in any order.
+            The actual rendered columns are set as a property on the row definition" -->
+
+      <!-- ID Column -->
+      <ng-container matColumnDef="id">
+        <mat-header-cell *matHeaderCellDef> ID </mat-header-cell>
+        <mat-cell *matCellDef="let element"> {{element.id}} </mat-cell>
+      </ng-container>
+
+      <!-- Latitude Column -->
+      <ng-container matColumnDef="latitude">
+        <mat-header-cell *matHeaderCellDef> Latitude </mat-header-cell>
+        <mat-cell *matCellDef="let element"> {{element.latitude}} </mat-cell>
+      </ng-container>
+
+      <!-- Longitude Column -->
+      <ng-container matColumnDef="longitude">
+        <mat-header-cell *matHeaderCellDef> Longitude </mat-header-cell>
+        <mat-cell *matCellDef="let element"> {{element.longitude}} </mat-cell>
+      </ng-container>
+
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    </mat-table>
+    <mat-paginator #paginator
+                  [pageSize]="25"
+                  [pageSizeOptions]="[25, 50, 100]">
+    </mat-paginator>
+  </div>
