@@ -7,16 +7,32 @@
       <mat-slide-toggle class="item" (change)="onRefreshToggle($event)">Auto-Refresh</mat-slide-toggle>
   </div>
   <div class="bottom left">
-    <p class="settings-label">Block Size</p>
-    <mat-slider class="item"
-      [max]=100
-      [min]=10 
-      [(ngModel)]="blockSizePixels" 
-      (input)="onSliderChange($event)"
-      [thumbLabel]=true
-      [disabled]="!drawgrid">
-    </mat-slider>
-    <mat-checkbox class="item" [(ngModel)]="drawgrid" (change)="updateView()"><p class="settings-label">Show Grid</p></mat-checkbox>
+    <div class="left-container">
+      <div class="left">
+      <p class="settings-label">Block Size</p>
+        <mat-slider class="item"
+          [max]=200
+          [min]=10 
+          [(ngModel)]="blockSizePixels" 
+          (input)="onSliderChange($event)"
+          [thumbLabel]=true
+          [disabled]="!drawgrid">
+        </mat-slider>
+        <mat-checkbox class="item" [(ngModel)]="drawgrid" (change)="updateView()"><p class="settings-label">Show Grid</p></mat-checkbox>
+      </div>
+      <div class="left">
+        <p class="settings-label">Node Size</p>
+        <mat-slider class="item"
+          [max]=25
+          [min]=1
+          [(ngModel)]="nodeSizePixels" 
+          (input)="onNodeSliderChange($event)"
+          [thumbLabel]=true
+          [disabled]="!drawnodes">
+        </mat-slider>
+        <mat-checkbox class="item" [(ngModel)]="drawnodes" (change)="updateView()"><p class="settings-label">Show Nodes</p></mat-checkbox>
+      </div>
+    </div>
   </div>
   <div class="bottom right">
     <canvas class="{{handPtr}}"

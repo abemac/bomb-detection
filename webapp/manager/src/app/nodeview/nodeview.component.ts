@@ -17,6 +17,8 @@ export class NodeViewComponent implements AfterViewInit {
   private purpleIntensityPerNode=.1
   private blockIntensites: number[][]
 
+  private nodeSizePixels :number=4
+
   private scale : number=1
   private oldscale : number=1
   private focusy : number;
@@ -28,6 +30,7 @@ export class NodeViewComponent implements AfterViewInit {
   protected refreshThreadHandle : any;
 
   private drawgrid: boolean=true;
+  private drawnodes: boolean=true;
 
   constructor(private api: ApiService){
     this.focusy=this.canvasHeightPixels/2
@@ -69,7 +72,7 @@ export class NodeViewComponent implements AfterViewInit {
     this.context.fillStyle="hsl(120, 100%, 50%)"
     this.context.strokeStyle="hsl(120, 100%, 50%)"
     this.context.beginPath()
-    this.context.arc(x,y,4/this.scale,0,2*Math.PI)
+    this.context.arc(x,y,this.nodeSizePixels/this.scale,0,2*Math.PI)
     this.context.fill()
   }
 
@@ -153,7 +156,10 @@ export class NodeViewComponent implements AfterViewInit {
       this.context.fillStyle="ghostwhite"
       this.context.fillRect(0,0,this.canvasWidthPixels,this.canvasHeightPixels)
     }
-    this.drawNodes()
+    if(this.drawnodes){
+      this.drawNodes()
+    }
+  
     
     this.oldscale=this.scale
     
@@ -172,6 +178,10 @@ export class NodeViewComponent implements AfterViewInit {
     }
     this.updateView()
     
+  }
+  onNodeSliderChange(event){
+    this.nodeSizePixels=event.value
+    this.updateView()
   }
   onMouseWheelUp(event){
     this.scale*=1.2
