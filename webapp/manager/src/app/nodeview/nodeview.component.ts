@@ -18,7 +18,7 @@ export class NodeViewComponent implements AfterViewInit {
   private blockIntensites: number[][]
 
   private nodeSizePixels :number=4
-
+  private supernodeSizePixels :number=6
   private scale : number=1
   private oldscale : number=1
   private focusy : number;
@@ -31,6 +31,8 @@ export class NodeViewComponent implements AfterViewInit {
 
   private drawgrid: boolean=true;
   private drawnodes: boolean=true;
+  private drawsupernodes: boolean=true;
+
 
   constructor(private api: ApiService){
     this.focusy=this.canvasHeightPixels/2
@@ -68,12 +70,21 @@ export class NodeViewComponent implements AfterViewInit {
     }
   }
   
-  drawNode(x:number,y:number){
-    this.context.fillStyle="hsl(120, 100%, 50%)"
-    this.context.strokeStyle="hsl(120, 100%, 50%)"
-    this.context.beginPath()
-    this.context.arc(x,y,this.nodeSizePixels/this.scale,0,2*Math.PI)
-    this.context.fill()
+  drawNode(x:number,y:number,supernode:boolean){
+    if(supernode && this.drawsupernodes){
+      this.context.fillStyle="#ff4081"
+      this.context.strokeStyle="#ff4081"
+      this.context.beginPath()
+      this.context.arc(x,y,(this.supernodeSizePixels)/this.scale,0,2*Math.PI)
+     this.context.fill()
+    }else if (!supernode && this.drawnodes){
+      this.context.fillStyle="hsl(120, 100%, 50%)"
+      this.context.strokeStyle="hsl(120, 100%, 50%)"
+      this.context.beginPath()
+      this.context.arc(x,y,this.nodeSizePixels/this.scale,0,2*Math.PI)
+      this.context.fill()
+    }
+    
   }
 
   colorSections(){
@@ -92,7 +103,7 @@ export class NodeViewComponent implements AfterViewInit {
     this.context.translate(this.trx,this.try)
     this.context.scale(this.scale,this.scale)
     for(var i=0;i<this.api.nodeData.length;i++){
-      this.drawNode(this.api.nodeData[i].longitude,this.api.nodeData[i].latitude)
+      this.drawNode(this.api.nodeData[i].long,this.api.nodeData[i].lat,this.api.nodeData[i].sn)
     }
     this.context.restore()
   }
@@ -109,8 +120,8 @@ export class NodeViewComponent implements AfterViewInit {
       }
     }
     for(let node of this.api.nodeData){
-      var rowi=Math.floor((this.try+node.latitude*this.scale)/this.blockSizePixels)
-      var coli=Math.floor((this.trx+node.longitude*this.scale)/this.blockSizePixels)
+      var rowi=Math.floor((this.try+node.lat*this.scale)/this.blockSizePixels)
+      var coli=Math.floor((this.trx+node.long*this.scale)/this.blockSizePixels)
       
       if(this.blockIntensites[rowi] != undefined){
         if(this.blockIntensites[rowi][coli]!=undefined){
@@ -122,9 +133,7 @@ export class NodeViewComponent implements AfterViewInit {
   }
 
   update(){
-    this.api.updateNodes().then(data=>{
-      this.updateView()
-    });
+    this.api.updateNodes().then(()=>this.updateView());
   }
 
   onRefreshToggle(event){
@@ -156,9 +165,9 @@ export class NodeViewComponent implements AfterViewInit {
       this.context.fillStyle="ghostwhite"
       this.context.fillRect(0,0,this.canvasWidthPixels,this.canvasHeightPixels)
     }
-    if(this.drawnodes){
-      this.drawNodes()
-    }
+
+    this.drawNodes()
+    
   
     
     this.oldscale=this.scale
@@ -181,6 +190,10 @@ export class NodeViewComponent implements AfterViewInit {
   }
   onNodeSliderChange(event){
     this.nodeSizePixels=event.value
+    this.updateView()
+  }
+  onSuperNodeSliderChange(event){
+    this.supernodeSizePixels=event.value
     this.updateView()
   }
   onMouseWheelUp(event){

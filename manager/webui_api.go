@@ -29,7 +29,7 @@ func (w *WebUI) Run() {
 
 func (w *WebUI) handleNodeInfoRequest(resp http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(resp, `{"nodes":[`)
-	w.mgr.mapMutex.RLock()
+	w.mgr.nodesMutex.Lock()
 	first := true
 	for k, v := range w.mgr.nodes {
 		if !first {
@@ -37,10 +37,20 @@ func (w *WebUI) handleNodeInfoRequest(resp http.ResponseWriter, req *http.Reques
 		} else {
 			first = false
 		}
-		fmt.Fprintf(resp, `{"id":%d,"latitude":%f,"longitude":%f}`, k, v.Latitude, v.Longitude)
+		v.mutex.RLock()
+		fmt.Fprintf(resp, `{"id":%d,"lat":%f,"long":%f,"sn":false}`, k, v.Latitude, v.Longitude)
+		v.mutex.RUnlock()
+	}
+	w.mgr.nodesMutex.Unlock()
+	w.mgr.supernodesMutex.Lock()
+	for k, v := range w.mgr.supernodes {
+		fmt.Fprintf(resp, ",")
+		v.mutex.RLock()
+		fmt.Fprintf(resp, `{"id":%d,"lat":%f,"long":%f,"sn":true}`, k, v.Latitude, v.Longitude)
+		v.mutex.RUnlock()
 	}
 	fmt.Fprintf(resp, "]}")
-	w.mgr.mapMutex.RUnlock()
+	w.mgr.supernodesMutex.Unlock()
 }
 
 func (n *node) MarshalJSON() ([]byte, error) {

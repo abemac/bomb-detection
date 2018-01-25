@@ -1,5 +1,6 @@
 export class NODEDATA{
     id :number;//use string?
-    latitude:number;
-    longitude:number;
+    lat:number; //latitude
+    long:number; //longitude
+    sn: boolean;
 }

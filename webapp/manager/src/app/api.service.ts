@@ -9,7 +9,7 @@ export class ApiService {
   public nodeData: NODEDATA[]
   
   updateNodes(){
-    return this.http.get('http://localhost:8080/GetNodes').toPromise().then( resp =>{
+    return this.http.get('/GetNodes').toPromise<any>().then( resp =>{
       this.nodeData =resp['nodes'] as NODEDATA[]
      }).catch(err=>{
        return Promise.reject(err.message || err);

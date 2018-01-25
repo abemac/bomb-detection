@@ -32,6 +32,18 @@
         </mat-slider>
         <mat-checkbox class="item" [(ngModel)]="drawnodes" (change)="updateView()"><p class="settings-label">Show Nodes</p></mat-checkbox>
       </div>
+      <div class="left">
+        <p class="settings-label">Supernode Size</p>
+        <mat-slider class="item"
+          [max]=25
+          [min]=1
+          [(ngModel)]="supernodeSizePixels" 
+          (input)="onSuperNodeSliderChange($event)"
+          [thumbLabel]=true
+          [disabled]="!drawsupernodes">
+        </mat-slider>
+        <mat-checkbox class="item" [(ngModel)]="drawsupernodes" (change)="updateView()"><p class="settings-label">Show Supernodes</p></mat-checkbox>
+      </div>
     </div>
   </div>
   <div class="bottom right">
