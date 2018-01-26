@@ -33,7 +33,9 @@ export class NodeViewComponent implements AfterViewInit {
   private drawnodes: boolean=true;
   private drawsupernodes: boolean=true;
 
+  private interpolation_ms=20
 
+  private prevNodes : NODEDATA[]
   constructor(private api: ApiService){
     this.focusy=this.canvasHeightPixels/2
     this.focusx=this.canvasWidthPixels/2
@@ -133,6 +135,7 @@ export class NodeViewComponent implements AfterViewInit {
   }
 
   update(){
+    this.prevNodes=this.api.nodeData
     this.api.updateNodes().then(()=>this.updateView());
   }
 

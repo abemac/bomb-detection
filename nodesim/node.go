@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/abemac/bomb-detection/constants"
@@ -16,6 +17,13 @@ type Node struct {
 	managerIP   string
 	managerPort uint16
 	assignedID  uint64
+	location    Location
+}
+
+type Location struct {
+	latitude  float64
+	longitude float64
+	lock      sync.RWMutex
 }
 
 //NewNode creates a new Node
@@ -24,6 +32,7 @@ func NewNode(ip string) {
 	n.managerIP = ip
 	n.managerPort = 12345
 	n.assignedID = constants.ID_NOT_ASSIGNED
+	n.location.latitude, n.location.longitude = rand.Float64()*180-90, rand.Float64()*360-180
 	go n.mainLoop()
 	log.V("New Node created")
 }
@@ -35,6 +44,11 @@ func CreateNodes(number uint64, ip string) {
 	log.I(number, "new nodes created, they are active")
 }
 func (n *Node) mainLoop() {
+	go n.act()
+	n.communicateWithManager()
+}
+
+func (n *Node) communicateWithManager() {
 	var conn net.Conn
 	var connected bool
 	for {
@@ -142,5 +156,40 @@ func (n *Node) sample() int {
 	return rand.Intn(100)
 }
 func (n *Node) getGPSLoc() (float64, float64) {
-	return rand.Float64()*180 - 90, rand.Float64()*360 - 180
+	n.location.lock.RLock()
+	defer n.location.lock.RUnlock()
+	return n.location.latitude, n.location.longitude
+}
+
+func (n *Node) act() {
+	for {
+		lat := float64(rand.Intn(3) - 1)
+		long := float64(rand.Intn(3) - 1)
+		n.location.add(lat, long)
+		time.Sleep(time.Millisecond * 500)
+	}
+}
+func (l *Location) add(latitude float64, longitude float64) {
+	l.lock.RLock()
+	lat, long := l.latitude, l.longitude
+	l.lock.RUnlock()
+
+	lat += latitude
+	long += longitude
+	if lat > 90 {
+		lat -= 180
+	}
+	if lat < -90 {
+		lat += 180
+	}
+	if long > 180 {
+		long -= 360
+	}
+	if long < -180 {
+		long += 360
+	}
+	l.lock.Lock()
+	l.latitude = lat
+	l.longitude = long
+	l.lock.Unlock()
 }
