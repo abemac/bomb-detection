@@ -28,14 +28,16 @@ export class NodeViewComponent implements AfterViewInit {
 
   private autorefresh:boolean;
   protected refreshThreadHandle : any;
-
+  private btnColor: string="green"
   private drawgrid: boolean=true;
   private drawnodes: boolean=true;
   private drawsupernodes: boolean=true;
 
-  private interpolation_ms=20
+  private interpolation_ms=40
+  private interpolation_step=0
+  private interpolation_handle :any;
+  private interpolate: boolean=true
 
-  private prevNodes : NODEDATA[]
   constructor(private api: ApiService){
     this.focusy=this.canvasHeightPixels/2
     this.focusx=this.canvasWidthPixels/2
@@ -104,9 +106,9 @@ export class NodeViewComponent implements AfterViewInit {
     this.context.save()
     this.context.translate(this.trx,this.try)
     this.context.scale(this.scale,this.scale)
-    for(var i=0;i<this.api.nodeData.length;i++){
-      this.drawNode(this.api.nodeData[i].long,this.api.nodeData[i].lat,this.api.nodeData[i].sn)
-    }
+    this.api.Nodes().forEach((node,key,nodes)=>{
+      this.drawNode(node.long,node.lat,node.sn)
+    })
     this.context.restore()
   }
 
@@ -121,7 +123,7 @@ export class NodeViewComponent implements AfterViewInit {
         this.blockIntensites[r][c]=0
       }
     }
-    for(let node of this.api.nodeData){
+    this.api.Nodes().forEach((node,key,nodes)=>{
       var rowi=Math.floor((this.try+node.lat*this.scale)/this.blockSizePixels)
       var coli=Math.floor((this.trx+node.long*this.scale)/this.blockSizePixels)
       
@@ -130,21 +132,42 @@ export class NodeViewComponent implements AfterViewInit {
           this.blockIntensites[rowi][coli]+=this.purpleIntensityPerNode
         }
       }
-    }
+    })
     
   }
 
   update(){
-    this.prevNodes=this.api.nodeData
-    this.api.updateNodes().then(()=>this.updateView());
-  }
+    clearInterval(this.interpolation_handle)
+    this.api.shiftBuffer()
+    this.interpolation_step=0
+    if(this.interpolate){
+      this.interpolation_handle=setInterval(()=>this.incrementInterpolationStep(),this.interpolation_ms)
+    }else{
+      this.updateView()
+    }
+    this.api.updateNodeData();
 
-  onRefreshToggle(event){
-    if(event.checked){
+  }
+  incrementInterpolationStep(){
+    this.updateView()
+    this.api.Nodes().forEach((node,key,nodes)=>{
+        node.lat+=node.dlat;
+        node.long+=node.dlong;
+    })
+    this.interpolation_step++;
+    if(this.interpolation_step > 24 ){
+      clearInterval(this.interpolation_handle)
+      this.interpolation_step=0
+    }
+  }
+  onStartToggle(event){
+    if(!this.autorefresh){
       this.autorefresh=true;
+      this.btnColor="red"
       this.refreshThreadHandle = setInterval(() => {this.update();},1000);
     }else{
       this.autorefresh=false;
+      this.btnColor="green"
       clearInterval(this.refreshThreadHandle);
     }
   }
@@ -153,7 +176,6 @@ export class NodeViewComponent implements AfterViewInit {
   }
   updateView(){
     this.context.clearRect(0,0,this.canvasWidthPixels,this.canvasHeightPixels)
-    
     var ratio=this.scale/this.oldscale
     this.trx=this.focusx+(this.trx-this.focusx)*ratio
     this.try=this.focusy+(this.try-this.focusy)*ratio

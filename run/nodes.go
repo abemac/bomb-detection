@@ -15,7 +15,8 @@ func main() {
 	var ip = flag.String("ip", "127.0.0.1", "manager ip")
 	flag.Parse()
 	constants.LOG_LEVEL = *loglevel
-	nodesim.CreateNodes(10000, *ip)
+	nodesim.CreateNodes(9900, *ip)
+	nodesim.CreateSupernodes(100, *ip)
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	wg.Wait()

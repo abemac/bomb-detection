@@ -3,8 +3,8 @@
 
   </div>
   <div class="top right">
-      <button mat-raised-button (click)="update()" class="item" [disabled]="autorefresh">Refresh</button>
-      <mat-slide-toggle class="item" (change)="onRefreshToggle($event)">Auto-Refresh</mat-slide-toggle>
+      <button mat-raised-button (click)="onStartToggle($event)" class="item smallBtn"><i *ngIf="autorefresh"class="fa fa-pause" aria-hidden="true"></i>
+        <i *ngIf="!autorefresh" class="fa fa-play" aria-hidden="true"></i></button>
   </div>
   <div class="bottom left">
     <div class="left-container">
@@ -43,6 +43,10 @@
           [disabled]="!drawsupernodes">
         </mat-slider>
         <mat-checkbox class="item" [(ngModel)]="drawsupernodes" (change)="updateView()"><p class="settings-label">Show Supernodes</p></mat-checkbox>
+      </div>
+      <div class="left">
+        <p class="settings-label">Interpolate node position</p>
+        <mat-checkbox class="item" [(ngModel)]="interpolate"></mat-checkbox>
       </div>
     </div>
   </div>

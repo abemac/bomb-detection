@@ -3,4 +3,6 @@ export class NODEDATA{
     lat:number; //latitude
     long:number; //longitude
     sn: boolean;
+    dlat:number;
+    dlong:number;
 }
