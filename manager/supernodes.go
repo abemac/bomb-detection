@@ -28,10 +28,11 @@ func (m *Manager) removeSuperNode(id uint64) {
 	delete(m.supernodes, id)
 	m.supernodesMutex.Unlock()
 }
-func (m *Manager) checkIfSupernodeIDValid(id uint64) uint64 {
+func (m *Manager) checkIfSupernodeIDValid(id uint64, muid int64) uint64 {
 	m.supernodesMutex.RLock()
 	_, ok := m.supernodes[id]
 	m.supernodesMutex.RUnlock()
+	ok = ok && (muid == m.uid)
 	if !ok {
 		//panic("AHHH") //nodes already assigned ID but manager crashed possibly
 		id = m.newSuperNode()

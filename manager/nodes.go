@@ -28,10 +28,12 @@ func (m *Manager) removeNode(id uint64) {
 	delete(m.nodes, id)
 	m.nodesMutex.Unlock()
 }
-func (m *Manager) checkIfNodeIDValid(id uint64) uint64 {
+func (m *Manager) checkIfNodeIDValid(id uint64, muid int64) uint64 {
 	m.nodesMutex.RLock()
 	_, ok := m.nodes[id]
 	m.nodesMutex.RUnlock()
+	ok = ok && (muid == m.uid)
+
 	if !ok {
 		//panic("AHHH") //nodes already assigned ID but manager crashed possibly
 		id = m.newNode()

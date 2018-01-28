@@ -9,7 +9,7 @@
   <div class="bottom left">
     <div class="left-container">
       <div class="left">
-      <p class="settings-label">Block Size</p>
+      <p class="settings-label">Block Size (px)</p>
         <mat-slider class="item"
           [max]=200
           [min]=10 
@@ -21,7 +21,7 @@
         <mat-checkbox class="item" [(ngModel)]="drawgrid" (change)="updateView()"><p class="settings-label">Show Grid</p></mat-checkbox>
       </div>
       <div class="left">
-        <p class="settings-label">Node Size</p>
+        <p class="settings-label">Node Size (px)</p>
         <mat-slider class="item"
           [max]=25
           [min]=1
@@ -33,7 +33,7 @@
         <mat-checkbox class="item" [(ngModel)]="drawnodes" (change)="updateView()"><p class="settings-label">Show Nodes</p></mat-checkbox>
       </div>
       <div class="left">
-        <p class="settings-label">Supernode Size</p>
+        <p class="settings-label">Supernode Size (px)</p>
         <mat-slider class="item"
           [max]=25
           [min]=1
@@ -47,6 +47,14 @@
       <div class="left">
         <p class="settings-label">Interpolate node position</p>
         <mat-checkbox class="item" [(ngModel)]="interpolate"></mat-checkbox>
+        <mat-slider class="item"
+        [max]=500
+        [min]=40
+        [(ngModel)]="interpolation_ms"
+        [disabled]="!interpolate"
+        [thumbLabel]=true>
+      </mat-slider>
+      <p class="settings-label">Step Time (ms) </p>
       </div>
     </div>
   </div>

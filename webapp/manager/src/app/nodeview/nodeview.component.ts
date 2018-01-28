@@ -33,7 +33,8 @@ export class NodeViewComponent implements AfterViewInit {
   private drawnodes: boolean=true;
   private drawsupernodes: boolean=true;
 
-  private interpolation_ms=40
+  public interpolation_ms=40
+  public updateInterval=7000
   private interpolation_step=0
   private interpolation_handle :any;
   private interpolate: boolean=true
@@ -145,7 +146,7 @@ export class NodeViewComponent implements AfterViewInit {
     }else{
       this.updateView()
     }
-    this.api.updateNodeData();
+    this.api.updateNodeData(this.updateInterval / this.interpolation_ms);
 
   }
   incrementInterpolationStep(){
@@ -155,7 +156,7 @@ export class NodeViewComponent implements AfterViewInit {
         node.long+=node.dlong;
     })
     this.interpolation_step++;
-    if(this.interpolation_step > 24 ){
+    if(this.interpolation_step > (this.updateInterval / this.interpolation_ms-1) ){
       clearInterval(this.interpolation_handle)
       this.interpolation_step=0
     }
@@ -164,7 +165,7 @@ export class NodeViewComponent implements AfterViewInit {
     if(!this.autorefresh){
       this.autorefresh=true;
       this.btnColor="red"
-      this.refreshThreadHandle = setInterval(() => {this.update();},1000);
+      this.refreshThreadHandle = setInterval(() => {this.update();},this.updateInterval);
     }else{
       this.autorefresh=false;
       this.btnColor="green"

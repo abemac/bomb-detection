@@ -2,8 +2,10 @@ package manager
 
 import (
 	"encoding/json"
+	"math/rand"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/abemac/bomb-detection/constants"
 )
@@ -15,6 +17,7 @@ type Manager struct {
 	lastAssignedNodeID uint64
 	nodesMutex         *sync.RWMutex
 	supernodesMutex    *sync.RWMutex
+	uid                int64
 }
 
 //NewManager creates a new Manager
@@ -25,6 +28,7 @@ func NewManager() *Manager {
 	m.lastAssignedNodeID = 0
 	m.nodesMutex = new(sync.RWMutex)
 	m.supernodesMutex = new(sync.RWMutex)
+	m.uid = time.Now().UnixNano()
 	return m
 }
 
@@ -45,7 +49,7 @@ func (m *Manager) handleMessage(bytes []byte) []byte {
 		if message.ID == constants.ID_NOT_ASSIGNED {
 			id = m.newSuperNode()
 		} else {
-			id = m.checkIfSupernodeIDValid(message.ID)
+			id = m.checkIfSupernodeIDValid(message.ID, message.ManagerUID)
 		}
 
 		if message.SampleValid {
@@ -57,7 +61,8 @@ func (m *Manager) handleMessage(bytes []byte) []byte {
 		m.updateSuperNodeLocation(id, message.Latitude, message.Longitude)
 		response.PerformSample = true
 		response.AssignedID = id
-		response.NextCheckin = 2
+		response.ManagerUID = m.uid
+		response.NextCheckin = rand.Intn(5) + 5
 		responseBytes, err := json.Marshal(response)
 		if err != nil {
 			panic(err.Error())
@@ -69,7 +74,7 @@ func (m *Manager) handleMessage(bytes []byte) []byte {
 	if message.ID == constants.ID_NOT_ASSIGNED {
 		id = m.newNode()
 	} else {
-		id = m.checkIfNodeIDValid(message.ID)
+		id = m.checkIfNodeIDValid(message.ID, message.ManagerUID)
 	}
 
 	if message.SampleValid {
@@ -81,7 +86,8 @@ func (m *Manager) handleMessage(bytes []byte) []byte {
 	m.updateNodeLocation(id, message.Latitude, message.Longitude)
 	response.PerformSample = true
 	response.AssignedID = id
-	response.NextCheckin = 2
+	response.NextCheckin = rand.Intn(5) + 5
+	response.ManagerUID = m.uid
 	responseBytes, err := json.Marshal(response)
 	if err != nil {
 		panic(err.Error())

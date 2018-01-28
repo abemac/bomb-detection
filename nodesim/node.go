@@ -18,6 +18,7 @@ type Node struct {
 	managerPort uint16
 	assignedID  uint64
 	location    Location
+	muid        int64
 }
 
 type Location struct {
@@ -97,6 +98,8 @@ func (n *Node) sendInfoAndGetResponse(conn net.Conn) (*constants.ManagerToNodeJS
 	message.Latitude, message.Longitude = n.getGPSLoc()
 	message.ID = n.assignedID
 	message.SampleValid = false
+	message.ManagerUID = n.muid
+
 	messageJSON, err := json.Marshal(message)
 	if err != nil {
 		panic(err.Error())
@@ -113,6 +116,7 @@ func (n *Node) sendSample(conn net.Conn) error {
 	message.ID = n.assignedID
 	message.SampleValue = n.sample()
 	message.SampleValid = true
+	message.ManagerUID = n.muid
 	messageJSON, err := json.Marshal(message)
 	if err != nil {
 		return err
@@ -142,6 +146,7 @@ func (n *Node) recvFrom(conn net.Conn) (*constants.ManagerToNodeJSON, error) {
 
 func (n *Node) handleResponse(msg *constants.ManagerToNodeJSON, conn net.Conn) error {
 	n.assignedID = msg.AssignedID
+	n.muid = msg.ManagerUID
 	if msg.PerformSample {
 		err := n.sendSample(conn)
 		if err != nil {

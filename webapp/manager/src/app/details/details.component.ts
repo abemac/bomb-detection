@@ -20,12 +20,12 @@ export class DetailsComponent implements AfterViewInit {
 
 
   ngAfterViewInit() {
-    this.api.updateNodeData().then(data=>{
+    //this.api.updateNodeData().then(data=>{
       // this.api.fillBuffer()
       // this.dataSource = new MatTableDataSource<NODEDATA>(Array.from(this.api.nextNodes.values()));
       // this.dataSource.paginator = this.paginator;
 
-    })
+   // })
     
   }
   

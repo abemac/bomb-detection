@@ -16,6 +16,7 @@ type Supernode struct {
 	managerIP   string
 	managerPort uint16
 	assignedID  uint64
+	muid        int64
 }
 
 //NewNode creates a new Node
@@ -84,6 +85,7 @@ func (n *Supernode) sendInfoAndGetResponse(conn net.Conn) (*constants.ManagerToN
 	message.ID = n.assignedID
 	message.SampleValid = false
 	message.SuperNode = true
+	message.ManagerUID = n.muid
 	messageJSON, err := json.Marshal(message)
 	if err != nil {
 		panic(err.Error())
@@ -101,6 +103,7 @@ func (n *Supernode) sendSample(conn net.Conn) error {
 	message.SampleValue = n.sample()
 	message.SampleValid = true
 	message.SuperNode = true
+	message.ManagerUID = n.muid
 	messageJSON, err := json.Marshal(message)
 	if err != nil {
 		return err
@@ -130,6 +133,7 @@ func (n *Supernode) recvFrom(conn net.Conn) (*constants.ManagerToNodeJSON, error
 
 func (n *Supernode) handleResponse(msg *constants.ManagerToNodeJSON, conn net.Conn) error {
 	n.assignedID = msg.AssignedID
+	n.muid = msg.ManagerUID
 	if msg.PerformSample {
 		err := n.sendSample(conn)
 		if err != nil {

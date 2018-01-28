@@ -6,6 +6,7 @@ type ManagerToNodeJSON struct {
 	PerformSample  bool   `json:"ps"`
 	AssignedID     uint64 `json:"id"`
 	BatteryPercent uint8  `json:"bp"`
+	ManagerUID     int64  `json:"muid"`
 }
 
 //NodeToManagerJSON defines the JSON format of Node to Manager communication
@@ -16,6 +17,7 @@ type NodeToManagerJSON struct {
 	SampleValue int     `json:"s,omitempty"`
 	SampleValid bool    `json:"v,omitempty"`
 	SuperNode   bool    `json:"sn,omitempty"`
+	ManagerUID  int64   `json:"muid"`
 }
 
 //DelimJSON delimiter used for json messages
