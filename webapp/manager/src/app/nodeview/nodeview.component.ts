@@ -14,7 +14,9 @@ export class NodeViewComponent implements AfterViewInit {
   private canvasWidthPixels: number =window.innerWidth/2-100
   private canvasHeightPixels:number = window.innerHeight-250
   private blockSizePixels:number=25
-  private purpleIntensityPerNode=.1
+  private purpleIntensityPerNode=100
+  private smoothPurple: boolean=true
+  public smoothingTime:number=500
   private blockIntensites: number[][]
 
   private nodeSizePixels :number=4
@@ -32,8 +34,12 @@ export class NodeViewComponent implements AfterViewInit {
   private drawgrid: boolean=true;
   private drawnodes: boolean=true;
   private drawsupernodes: boolean=true;
+  private numNodes : number=0;
+  private numSuperNodes: number=0
 
-  public interpolation_ms=40
+
+  public fps :number=25
+  public fps_actual:string="0";
   public updateInterval=7000
   private interpolation_step=0
   private interpolation_handle :any;
@@ -76,17 +82,18 @@ export class NodeViewComponent implements AfterViewInit {
   }
   
   drawNode(x:number,y:number,supernode:boolean){
+    
     if(supernode && this.drawsupernodes){
       this.context.fillStyle="#ff4081"
       this.context.strokeStyle="#ff4081"
       this.context.beginPath()
-      this.context.arc(x,y,(this.supernodeSizePixels)/this.scale,0,2*Math.PI)
+      this.context.arc(x,y,(this.supernodeSizePixels),0,2*Math.PI)
      this.context.fill()
     }else if (!supernode && this.drawnodes){
       this.context.fillStyle="hsl(120, 100%, 50%)"
       this.context.strokeStyle="hsl(120, 100%, 50%)"
       this.context.beginPath()
-      this.context.arc(x,y,this.nodeSizePixels/this.scale,0,2*Math.PI)
+      this.context.arc(x,y,this.nodeSizePixels,0,2*Math.PI)
       this.context.fill()
     }
     
@@ -106,9 +113,9 @@ export class NodeViewComponent implements AfterViewInit {
   drawNodes(){
     this.context.save()
     this.context.translate(this.trx,this.try)
-    this.context.scale(this.scale,this.scale)
+    //this.context.scale(this.scale,this.scale)
     this.api.Nodes().forEach((node,key,nodes)=>{
-      this.drawNode(node.long,node.lat,node.sn)
+      this.drawNode(node.long*this.scale,node.lat*this.scale,node.sn)
     })
     this.context.restore()
   }
@@ -118,6 +125,10 @@ export class NodeViewComponent implements AfterViewInit {
   }
 
   updateBlockCounts(){
+    var old
+    if (this.smoothPurple && this.autorefresh && this.interpolate){
+      old = JSON.parse(JSON.stringify(this.blockIntensites))
+    }
     for(var r=0;r*this.blockSizePixels<this.canvasHeightPixels;r++){
       for(var c=0;c*this.blockSizePixels<this.canvasWidthPixels;c++){
       
@@ -130,35 +141,50 @@ export class NodeViewComponent implements AfterViewInit {
       
       if(this.blockIntensites[rowi] != undefined){
         if(this.blockIntensites[rowi][coli]!=undefined){
-          this.blockIntensites[rowi][coli]+=this.purpleIntensityPerNode
+          this.blockIntensites[rowi][coli]+=this.purpleIntensityPerNode/1000.0
         }
       }
-    })
+    });
+    if(this.smoothPurple && this.autorefresh && this.interpolate){
+      for(var r=0;r*this.blockSizePixels<this.canvasHeightPixels;r++){
+        for(var c=0;c*this.blockSizePixels<this.canvasWidthPixels;c++){
+          this.blockIntensites[r][c]=old[r][c]+(this.blockIntensites[r][c]-old[r][c])/(this.smoothingTime*this.fps/1000)
+        }
+      }
+    }
+
+
+
     
   }
 
   update(){
+   
     clearInterval(this.interpolation_handle)
+    var time=performance.now()
+    this.fps_actual=(this.interpolation_step/(time-this.lastTime)*1000).toFixed(3)
     this.api.shiftBuffer()
     this.interpolation_step=0
     if(this.interpolate){
-      this.interpolation_handle=setInterval(()=>this.incrementInterpolationStep(),this.interpolation_ms)
+      this.lastTime=performance.now()
+      this.interpolation_handle=setInterval(()=>this.incrementInterpolationStep(),1000/this.fps)
     }else{
       this.updateView()
     }
-    this.api.updateNodeData(this.updateInterval / this.interpolation_ms);
+    this.api.updateNodeData(this.updateInterval *this.fps/1000);
 
   }
+  private lastTime: number;
   incrementInterpolationStep(){
+    
     this.updateView()
     this.api.Nodes().forEach((node,key,nodes)=>{
         node.lat+=node.dlat;
         node.long+=node.dlong;
     })
     this.interpolation_step++;
-    if(this.interpolation_step > (this.updateInterval / this.interpolation_ms-1) ){
+    if(this.interpolation_step > this.updateInterval *this.fps/ 1000){
       clearInterval(this.interpolation_handle)
-      this.interpolation_step=0
     }
   }
   onStartToggle(event){
@@ -198,8 +224,6 @@ export class NodeViewComponent implements AfterViewInit {
     
     this.oldscale=this.scale
     
-    
-    
   }
   onSliderChange(event) {
     this.blockSizePixels = event.value;
@@ -211,7 +235,10 @@ export class NodeViewComponent implements AfterViewInit {
       }
       this.blockIntensites.push(row)
     }
+    var oldSmooth=this.smoothPurple
+    this.smoothPurple=false
     this.updateView()
+    this.smoothPurple=oldSmooth;
     
   }
   onNodeSliderChange(event){
@@ -220,6 +247,10 @@ export class NodeViewComponent implements AfterViewInit {
   }
   onSuperNodeSliderChange(event){
     this.supernodeSizePixels=event.value
+    this.updateView()
+  }
+  onPurpleChange(event){
+    this.purpleIntensityPerNode=event.value;
     this.updateView()
   }
   onMouseWheelUp(event){

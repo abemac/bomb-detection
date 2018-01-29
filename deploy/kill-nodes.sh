@@ -1,5 +1,5 @@
 docker kill nodesim1
-docker kill nodesim2
+# docker kill nodesim2
 # docker kill nodesim3
 # docker kill nodesim4
 # docker kill nodesim5
