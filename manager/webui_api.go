@@ -18,7 +18,7 @@ func NewWebUI(mgr *Manager) *WebUI {
 }
 
 func (w *WebUI) setup() {
-	http.Handle("/", http.FileServer(http.Dir(os.Getenv("GOPATH")+"/src/github.com/abemac/bomb-detection/webapp/manager/dist/")))
+	http.Handle("/", http.FileServer(http.Dir(os.Getenv("DIST_PATH"))))
 	http.HandleFunc("/GetNodes", w.handleNodeInfoRequest)
 
 }
