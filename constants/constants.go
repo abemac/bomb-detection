@@ -26,3 +26,5 @@ var DelimJSON = []byte{0}
 const ID_NOT_ASSIGNED uint64 = 0
 
 var LOG_LEVEL int
+
+var DIST_PATH string

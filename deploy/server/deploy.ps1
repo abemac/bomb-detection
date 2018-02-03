@@ -1,4 +1,4 @@
-$Env:GOPATH="C:\Users\abrah\go"
+$Env:GOPATH="$Env:USERPROFILE\go"
 $Env:GOOS="linux"
 $Env:GOARCH="amd64"
 
@@ -36,13 +36,14 @@ if ($args.Contains("all") -or $args.Contains("manager")){
 
     Write-Host "**Building Manager Web App"
     Set-Location ../../webapp/manager
-    ng build > $null
+    ng build --prod --build-optimizer --environment=prod > $null
     Set-Location ../../deploy/server
+    ssh -p 2005 -t -o LogLevel=QUIET abraham@128.4.27.184 'rm -rf /home/abraham/dist' 2>$null
     Write-Host "**Sending Web App files to server"
     scp -r -P 2005 ../../webapp/manager/dist abraham@128.4.27.184:/home/abraham/ 2>&1 > $null
 
     Write-Host "**Starting manager on Server"
-    Start-Job -Name manager -ScriptBlock {ssh -p 2005 -t -o LogLevel=QUIET abraham@128.4.27.184 './manager' 2>$null}
+    Start-Job -Name manager -ScriptBlock {ssh -p 2005 -t -o LogLevel=QUIET abraham@128.4.27.184 'ulimit -n 1000000 ; ./manager -ll 4 -DIST_PATH /home/abraham/dist' 2>$null}
     Remove-Item manager
 
 }

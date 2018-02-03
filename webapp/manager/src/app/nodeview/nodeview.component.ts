@@ -9,43 +9,43 @@ import { ApiService } from '../api.service';
 export class NodeViewComponent implements AfterViewInit {
   
   @ViewChild('canvas') c :ElementRef;
-  private context: CanvasRenderingContext2D;
-  private canvas: HTMLCanvasElement;
-  private canvasWidthPixels: number =window.innerWidth/2-100
-  private canvasHeightPixels:number = window.innerHeight-250
-  private blockSizePixels:number=25
-  private purpleIntensityPerNode=100
-  private smoothPurple: boolean=true
-  public smoothingTime:number=500
-  private blockIntensites: number[][]
+  context: CanvasRenderingContext2D;
+  canvas: HTMLCanvasElement;
+  canvasWidthPixels: number =window.innerWidth/2-100
+  canvasHeightPixels:number = window.innerHeight-250
+  blockSizePixels:number=25
+  purpleIntensityPerNode=100
+  smoothPurple: boolean=true
+  smoothingTime:number=500
+  blockIntensites: number[][]
 
-  private nodeSizePixels :number=4
-  private supernodeSizePixels :number=6
-  private scale : number=1
-  private oldscale : number=1
-  private focusy : number;
-  private focusx : number;
-  private trx : number=this.canvasWidthPixels/2
-  private try: number=this.canvasHeightPixels/2
+  nodeSizePixels :number=4
+  supernodeSizePixels :number=6
+  scale : number=1
+  oldscale : number=1
+  focusy : number;
+  focusx : number;
+  trx : number=this.canvasWidthPixels/2
+  try: number=this.canvasHeightPixels/2
 
-  private autorefresh:boolean;
-  protected refreshThreadHandle : any;
-  private btnColor: string="green"
-  private drawgrid: boolean=true;
-  private drawnodes: boolean=true;
-  private drawsupernodes: boolean=true;
-  private numNodes : number=0;
-  private numSuperNodes: number=0
+  autorefresh:boolean;
+  refreshThreadHandle : any;
+  btnColor: string="green"
+  drawgrid: boolean=true;
+  drawnodes: boolean=true;
+  drawsupernodes: boolean=true;
+  numNodes : number=0;
+  numSuperNodes: number=0
 
 
   public fps :number=25
   public fps_actual:string="0";
   public updateInterval=7000
-  private interpolation_step=0
-  private interpolation_handle :any;
-  private interpolate: boolean=true
+   interpolation_step=0
+   interpolation_handle :any;
+   interpolate: boolean=true
 
-  constructor(private api: ApiService){
+  constructor( public api: ApiService){
     this.focusy=this.canvasHeightPixels/2
     this.focusx=this.canvasWidthPixels/2
     this.blockIntensites=new Array<Array<number>>()
@@ -174,7 +174,7 @@ export class NodeViewComponent implements AfterViewInit {
     this.api.updateNodeData(this.updateInterval *this.fps/1000);
 
   }
-  private lastTime: number;
+   lastTime: number;
   incrementInterpolationStep(){
     
     this.updateView()
@@ -271,10 +271,10 @@ export class NodeViewComponent implements AfterViewInit {
    
   }
 
-  private mouseDown :boolean=false
-  private handPtr : string="default-cursor"
-  private startX: number
-  private startY: number
+   mouseDown :boolean=false
+   handPtr : string="default-cursor"
+   startX: number
+   startY: number
 
   onMouseDown(event){
     this.mouseDown=true

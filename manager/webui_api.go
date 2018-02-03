@@ -3,7 +3,8 @@ package manager
 import (
 	"fmt"
 	"net/http"
-	"os"
+
+	"github.com/abemac/bomb-detection/constants"
 )
 
 type WebUI struct {
@@ -18,7 +19,8 @@ func NewWebUI(mgr *Manager) *WebUI {
 }
 
 func (w *WebUI) setup() {
-	http.Handle("/", http.FileServer(http.Dir(os.Getenv("DIST_PATH"))))
+	http.Handle("/", http.FileServer(http.Dir(constants.DIST_PATH)))
+	log.I("Web UI http server path: ", constants.DIST_PATH)
 	http.HandleFunc("/GetNodes", w.handleNodeInfoRequest)
 
 }

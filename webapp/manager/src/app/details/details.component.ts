@@ -9,7 +9,7 @@ import {NODEDATA} from '../types'
 })
 export class DetailsComponent implements AfterViewInit {
   displayedColumns = ['id', 'latitude', 'longitude'];
-  private dataSource :any;
+  dataSource :any;
   
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
