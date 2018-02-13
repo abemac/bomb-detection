@@ -32,45 +32,53 @@ func NewManager() *Manager {
 	return m
 }
 
+//Run the manager
 func (m *Manager) Run() {
 	log.I("Manager Started")
 	go NewWebUI(m).Run()
 	NewJSONRequestServer(m, 12345).Run()
 }
-
 func (m *Manager) handleMessage(bytes []byte) []byte {
 	message := new(constants.NodeToManagerJSON)
 	json.Unmarshal(bytes[:len(bytes)-1], message)
 	log.D("Received: ", *message)
 
-	var id uint64
-
 	if message.SuperNode {
-		if message.ID == constants.ID_NOT_ASSIGNED {
-			id = m.newSuperNode()
-		} else {
-			id = m.checkIfSupernodeIDValid(message.ID, message.ManagerUID)
-		}
+		return handleSuperNodeMessage(message, m)
+	}
+	return handleNodeMessage(message, m)
 
-		if message.SampleValid {
-			m.updateSuperNodeValue(id, message.SampleValue)
-			log.D("Receieved new sample from ID", id, ", value= ", message.SampleValue)
-			return nil
-		}
-		response := new(constants.ManagerToNodeJSON)
-		m.updateSuperNodeLocation(id, message.Latitude, message.Longitude)
-		response.PerformSample = true
-		response.AssignedID = id
-		response.ManagerUID = m.uid
-		response.NextCheckin = rand.Intn(5) + 5
-		responseBytes, err := json.Marshal(response)
-		if err != nil {
-			panic(err.Error())
-		}
-		log.D("Sending: ", *response)
-		return responseBytes
+}
+
+func handleSuperNodeMessage(message *constants.NodeToManagerJSON, m *Manager) []byte {
+	var id uint64
+	if message.ID == constants.ID_NOT_ASSIGNED {
+		id = m.newSuperNode()
+	} else {
+		id = m.checkIfSupernodeIDValid(message.ID, message.ManagerUID)
 	}
 
+	if message.SampleValid {
+		m.updateSuperNodeValue(id, message.SampleValue)
+		log.D("Receieved new sample from ID", id, ", value= ", message.SampleValue)
+		return nil
+	}
+	response := new(constants.ManagerToNodeJSON)
+	m.updateSuperNodeLocation(id, message.Latitude, message.Longitude)
+	response.PerformSample = true
+	response.AssignedID = id
+	response.ManagerUID = m.uid
+	response.NextCheckin = rand.Intn(5) + 5
+	responseBytes, err := json.Marshal(response)
+	if err != nil {
+		panic(err.Error())
+	}
+	log.D("Sending: ", *response)
+	return responseBytes
+}
+
+func handleNodeMessage(message *constants.NodeToManagerJSON, m *Manager) []byte {
+	var id uint64
 	if message.ID == constants.ID_NOT_ASSIGNED {
 		id = m.newNode()
 	} else {
@@ -94,7 +102,6 @@ func (m *Manager) handleMessage(bytes []byte) []byte {
 	}
 	log.D("Sending: ", *response)
 	return responseBytes
-
 }
 func (m *Manager) getNewID() uint64 {
 	//18,446,744,073,709,551,615 possible ids (18 quintillion)

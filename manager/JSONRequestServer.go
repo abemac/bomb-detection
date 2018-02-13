@@ -8,15 +8,18 @@ import (
 	"github.com/abemac/bomb-detection/constants"
 )
 
+//MessageHandler interface for handling JSON requests
 type MessageHandler interface {
 	handleMessage([]byte) []byte
 }
 
+//JSONRequestServer handles JSON requests
 type JSONRequestServer struct {
 	msgHandler MessageHandler
 	port       uint16
 }
 
+//NewJSONRequestServer creates a JSONRequestServer
 func NewJSONRequestServer(msgHandler MessageHandler, port uint16) *JSONRequestServer {
 	j := new(JSONRequestServer)
 	j.msgHandler = msgHandler
@@ -24,6 +27,7 @@ func NewJSONRequestServer(msgHandler MessageHandler, port uint16) *JSONRequestSe
 	return j
 }
 
+//Run the server
 func (j *JSONRequestServer) Run() {
 	log.I("JSON Request Server Started")
 	listener, err := net.Listen("tcp", ":"+strconv.Itoa(int(j.port)))

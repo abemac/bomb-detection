@@ -7,10 +7,12 @@ import (
 	"github.com/abemac/bomb-detection/constants"
 )
 
+//WebUI represents the Web interface
 type WebUI struct {
 	mgr *Manager
 }
 
+//NewWebUI creates a new http server for the webserver API and serves the dist directory
 func NewWebUI(mgr *Manager) *WebUI {
 	w := new(WebUI)
 	w.mgr = mgr
@@ -22,9 +24,9 @@ func (w *WebUI) setup() {
 	http.Handle("/", http.FileServer(http.Dir(constants.DIST_PATH)))
 	log.I("Web UI http server path: ", constants.DIST_PATH)
 	http.HandleFunc("/GetNodes", w.handleNodeInfoRequest)
-
 }
 
+//Run the http server
 func (w *WebUI) Run() {
 	http.ListenAndServe(":8080", nil)
 }
@@ -53,8 +55,4 @@ func (w *WebUI) handleNodeInfoRequest(resp http.ResponseWriter, req *http.Reques
 	}
 	fmt.Fprintf(resp, "]}")
 	w.mgr.supernodesMutex.Unlock()
-}
-
-func (n *node) MarshalJSON() ([]byte, error) {
-	return []byte{0}, nil
 }
