@@ -44,13 +44,13 @@ func (m *Manager) handleMessage(bytes []byte) []byte {
 	log.D("Received: ", *message)
 
 	if message.SuperNode {
-		return handleSuperNodeMessage(message, m)
+		return handleSuperNode(message, m)
 	}
-	return handleNodeMessage(message, m)
+	return handleNode(message, m)
 
 }
 
-func handleSuperNodeMessage(message *constants.NodeToManagerJSON, m *Manager) []byte {
+func handleSuperNode(message *constants.NodeToManagerJSON, m *Manager) []byte {
 	var id uint64
 	if message.ID == constants.ID_NOT_ASSIGNED {
 		id = m.newSuperNode()
@@ -69,6 +69,11 @@ func handleSuperNodeMessage(message *constants.NodeToManagerJSON, m *Manager) []
 	response.AssignedID = id
 	response.ManagerUID = m.uid
 	response.NextCheckin = rand.Intn(5) + 5
+
+	//m.supernodesMutex.RLock()
+	//var numSuperNodes = len(m.supernodes)
+	//m.supernodesMutex.RUnlock()
+
 	responseBytes, err := json.Marshal(response)
 	if err != nil {
 		panic(err.Error())
@@ -77,7 +82,7 @@ func handleSuperNodeMessage(message *constants.NodeToManagerJSON, m *Manager) []
 	return responseBytes
 }
 
-func handleNodeMessage(message *constants.NodeToManagerJSON, m *Manager) []byte {
+func handleNode(message *constants.NodeToManagerJSON, m *Manager) []byte {
 	var id uint64
 	if message.ID == constants.ID_NOT_ASSIGNED {
 		id = m.newNode()

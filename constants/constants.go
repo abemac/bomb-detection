@@ -2,11 +2,13 @@ package constants
 
 //ManagerToNodeJSON defines the JSON format of Manager to Node communication
 type ManagerToNodeJSON struct {
-	NextCheckin    int    `json:"nc"`
-	PerformSample  bool   `json:"ps"`
-	AssignedID     uint64 `json:"id"`
-	BatteryPercent uint8  `json:"bp"`
-	ManagerUID     int64  `json:"muid"`
+	NextCheckin    int     `json:"nc"`
+	PerformSample  bool    `json:"ps"`
+	AssignedID     uint64  `json:"id"`
+	BatteryPercent uint8   `json:"bp"`
+	ManagerUID     int64   `json:"muid"`
+	GoToLat        float64 `json:"gtla,omitempty"`
+	GoToLong       float64 `json:"gtlo,omitempty"`
 }
 
 //NodeToManagerJSON defines the JSON format of Node to Manager communication
