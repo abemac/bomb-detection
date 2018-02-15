@@ -26,7 +26,7 @@ export class ApiService {
           node.dlat=(this.nodesBuffer[0].get(key).lat -node.lat)/(numTicks)
           node.dlong=(this.nodesBuffer[0].get(key).long -node.long)/(numTicks)
           
-          if(Math.abs(node.dlat*numTicks) > 90 || Math.abs(node.dlong*numTicks)>180){//in case node wraps around, don't animate it
+          if(!node.sn && (Math.abs(node.dlat*numTicks) > 90 || Math.abs(node.dlong*numTicks)>180)){//in case node wraps around, don't animate it
             node.dlat=0
             node.dlong=0
           }

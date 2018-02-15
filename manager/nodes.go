@@ -12,11 +12,15 @@ type node struct {
 	Longitude      float64
 	lastSampleTime int64 //unix timestamp
 	mutex          *sync.RWMutex
+	row            int
+	col            int
 }
 
 func (m *Manager) newNode() uint64 {
 	n := new(node)
 	n.mutex = new(sync.RWMutex)
+	n.row = -1
+	n.col = -1
 	id := m.getNewID()
 	m.nodesMutex.Lock()
 	m.nodes[id] = n
@@ -51,6 +55,20 @@ func (m *Manager) updateNodeLocation(id uint64, latitude float64, longitude floa
 	n := m.nodes[id]
 	m.nodesMutex.RUnlock()
 	n.mutex.Lock()
+	newRow := getRowFromLat(latitude)
+	newCol := getColFromLong(longitude)
+	if newRow != n.row || newCol != n.col {
+		blockMutex.Lock()
+		pqMutex.Lock()
+		if n.row != -1 {
+			pq.updateCount(blocks[n.row][n.col], blocks[n.row][n.col].count-1)
+		}
+		pq.updateCount(blocks[newRow][newCol], blocks[newRow][newCol].count+1)
+		n.row = newRow
+		n.col = newCol
+		blockMutex.Unlock()
+		pqMutex.Unlock()
+	}
 	n.Latitude = latitude
 	n.Longitude = longitude
 	n.mutex.Unlock()

@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"container/heap"
 	"encoding/json"
 	"math/rand"
 	"sync"
@@ -64,15 +65,21 @@ func handleSuperNode(message *constants.NodeToManagerJSON, m *Manager) []byte {
 		return nil
 	}
 	response := new(constants.ManagerToNodeJSON)
-	m.updateSuperNodeLocation(id, message.Latitude, message.Longitude)
+	// m.updateSuperNodeLocation(id, message.Latitude, message.Longitude)
 	response.PerformSample = true
 	response.AssignedID = id
 	response.ManagerUID = m.uid
 	response.NextCheckin = rand.Intn(5) + 5
 
-	//m.supernodesMutex.RLock()
-	//var numSuperNodes = len(m.supernodes)
-	//m.supernodesMutex.RUnlock()
+	pqMutex.Lock()
+
+	b := heap.Pop(&pq).(*Block)
+	response.GoToLat = getBlockLat(b.row)
+	response.GoToLong = getBlockLong(b.col)
+	m.updateSuperNodeLocation(id, response.GoToLat, response.GoToLong)
+	pq.updateVisitedTime(b, time.Now().Unix())
+	heap.Push(&pq, b)
+	pqMutex.Unlock()
 
 	responseBytes, err := json.Marshal(response)
 	if err != nil {
@@ -95,6 +102,7 @@ func handleNode(message *constants.NodeToManagerJSON, m *Manager) []byte {
 		log.D("Receieved new sample from ID", id, ", value= ", message.SampleValue)
 		return nil
 	}
+
 	response := new(constants.ManagerToNodeJSON)
 	m.updateNodeLocation(id, message.Latitude, message.Longitude)
 	response.PerformSample = true

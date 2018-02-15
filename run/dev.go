@@ -18,7 +18,7 @@ func main() {
 	constants.DIST_PATH = *distPath
 
 	nodesim.CreateNodes(90, "127.0.0.1")
-	nodesim.CreateSupernodes(10, "127.0.0.1")
+	nodesim.CreateSupernodes(5, "127.0.0.1")
 	m := manager.NewManager()
 	m.Run()
 }
