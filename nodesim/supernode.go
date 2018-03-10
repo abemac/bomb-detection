@@ -17,6 +17,8 @@ type Supernode struct {
 	managerPort uint16
 	assignedID  uint64
 	muid        int64
+	lat         float64
+	long        float64
 }
 
 //NewNode creates a new Node
@@ -25,6 +27,7 @@ func NewSupernode(ip string) {
 	n.managerIP = ip
 	n.managerPort = 12345
 	n.assignedID = constants.ID_NOT_ASSIGNED
+	n.lat, n.long = rand.Float64()*180-90, rand.Float64()*360-180
 	go n.mainLoop()
 	log.V("New Supernode created")
 }
@@ -134,6 +137,8 @@ func (n *Supernode) recvFrom(conn net.Conn) (*constants.ManagerToNodeJSON, error
 func (n *Supernode) handleResponse(msg *constants.ManagerToNodeJSON, conn net.Conn) error {
 	n.assignedID = msg.AssignedID
 	n.muid = msg.ManagerUID
+	n.lat = msg.GoToLat
+	n.long = msg.GoToLong
 	if msg.PerformSample {
 		err := n.sendSample(conn)
 		if err != nil {
@@ -148,5 +153,5 @@ func (n *Supernode) sample() int {
 	return rand.Intn(100)
 }
 func (n *Supernode) getGPSLoc() (float64, float64) {
-	return rand.Float64()*180 - 90, rand.Float64()*360 - 180
+	return n.lat, n.long
 }

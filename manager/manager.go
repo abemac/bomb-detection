@@ -3,6 +3,7 @@ package manager
 import (
 	"container/heap"
 	"encoding/json"
+	"math"
 	"math/rand"
 	"sync"
 	"sync/atomic"
@@ -65,20 +66,40 @@ func handleSuperNode(message *constants.NodeToManagerJSON, m *Manager) []byte {
 		return nil
 	}
 	response := new(constants.ManagerToNodeJSON)
-	// m.updateSuperNodeLocation(id, message.Latitude, message.Longitude)
+	m.updateSuperNodeLocation(id, message.Latitude, message.Longitude)
 	response.PerformSample = true
 	response.AssignedID = id
 	response.ManagerUID = m.uid
 	response.NextCheckin = rand.Intn(5) + 5
 
 	pqMutex.Lock()
+	m.supernodesMutex.RLock()
+	numSuperNodes := len(m.supernodes)
+	m.supernodesMutex.RUnlock()
+	possibleBlocks := make([]*Block, numSuperNodes)
+	for i := 0; i < numSuperNodes; i++ {
+		possibleBlocks[i] = heap.Pop(&pq).(*Block)
+	}
+	closest := 0
+	dist := math.MaxFloat64
+	for i := 0; i < numSuperNodes; i++ {
+		latdist := getBlockLat(possibleBlocks[i].row) - message.Latitude
+		longdist := getBlockLong(possibleBlocks[i].col) - message.Longitude
+		thisdist := math.Sqrt(latdist*latdist + longdist*longdist)
+		if thisdist < dist {
+			dist = thisdist
+			closest = i
+		}
+	}
+	b := possibleBlocks[closest]
 
-	b := heap.Pop(&pq).(*Block)
 	response.GoToLat = getBlockLat(b.row)
 	response.GoToLong = getBlockLong(b.col)
-	m.updateSuperNodeLocation(id, response.GoToLat, response.GoToLong)
 	pq.updateVisitedTime(b, time.Now().Unix())
-	heap.Push(&pq, b)
+
+	for i := 0; i < numSuperNodes; i++ {
+		heap.Push(&pq, possibleBlocks[i])
+	}
 	pqMutex.Unlock()
 
 	responseBytes, err := json.Marshal(response)
