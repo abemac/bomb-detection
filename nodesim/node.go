@@ -33,7 +33,7 @@ func NewNode(ip string) {
 	n.managerIP = ip
 	n.managerPort = 12345
 	n.assignedID = constants.ID_NOT_ASSIGNED
-	n.location.latitude, n.location.longitude = rand.Float64()*180-90, rand.Float64()*360-180
+	n.location.latitude, n.location.longitude = rand.Float64()*180-90, rand.Float64()*180
 	go n.mainLoop()
 	log.V("New Node created")
 }
@@ -169,7 +169,7 @@ func (n *Node) getGPSLoc() (float64, float64) {
 func (n *Node) act() {
 	for {
 		lat := float64(rand.Intn(3) - 1)
-		long := float64(rand.Intn(3) - 1)
+		long := float64(rand.Intn(3) - 2)
 		n.location.add(lat, long)
 		time.Sleep(time.Millisecond * 500)
 	}

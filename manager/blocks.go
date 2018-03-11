@@ -5,8 +5,8 @@ import (
 	"sync"
 )
 
-const numcols = 16
-const numrows = 8
+const numcols = 20
+const numrows = 10
 
 func getRowFromLat(lat float64) int {
 	row := (lat + 90.0) / 180.0 * float64(numrows)
@@ -53,7 +53,8 @@ func init() {
 	pq = make(PriorityQueue, numrows*numcols)
 	for i := 0; i < numrows; i++ {
 		for j := 0; j < numcols; j++ {
-			blocks[i][j] = &Block{row: i,
+			blocks[i][j] = &Block{
+				row:   i,
 				col:   j,
 				index: i*numcols + j,
 				count: 0}
@@ -65,8 +66,14 @@ func init() {
 
 func (pq PriorityQueue) Len() int { return len(pq) }
 
-func (pq PriorityQueue) Less(i, j int) bool {
-	return pq[i].lastVisited < pq[j].lastVisited
+func (pq PriorityQueue) Less(i, j int) bool { //Less = "is more important"
+
+	// return pq[i].lastVisited < pq[j].lastVisited
+	timediff := pq[j].lastVisited - pq[i].lastVisited
+	countdiff := pq[j].count - pq[i].count
+	score := timediff + countdiff
+	return score > 0
+
 }
 
 func (pq PriorityQueue) Swap(i, j int) {

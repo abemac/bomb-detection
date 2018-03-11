@@ -17,8 +17,8 @@ func main() {
 	constants.LOG_LEVEL = *loglevel
 	constants.DIST_PATH = *distPath
 
-	nodesim.CreateNodes(90, "127.0.0.1")
-	nodesim.CreateSupernodes(5, "127.0.0.1")
+	nodesim.CreateNodes(900, "127.0.0.1")
+	nodesim.CreateSupernodes(20, "127.0.0.1")
 	m := manager.NewManager()
 	m.Run()
 }

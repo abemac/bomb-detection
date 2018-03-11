@@ -64,6 +64,7 @@ func (m *Manager) updateNodeLocation(id uint64, latitude float64, longitude floa
 			pq.updateCount(blocks[n.row][n.col], blocks[n.row][n.col].count-1)
 		}
 		pq.updateCount(blocks[newRow][newCol], blocks[newRow][newCol].count+1)
+		pq.updateVisitedTime(blocks[newRow][newCol], time.Now().Unix())
 		n.row = newRow
 		n.col = newCol
 		blockMutex.Unlock()
