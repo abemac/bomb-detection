@@ -3,7 +3,7 @@ import {HttpClient} from '@angular/common/http'
 import {NODEDATA} from './types'
 
 @Injectable()
-export class ApiService {
+export class NodesService {
 
   constructor(private http:HttpClient) { }
 

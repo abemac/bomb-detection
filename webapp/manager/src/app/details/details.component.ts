@@ -1,6 +1,6 @@
 import { Component,ViewChild,AfterViewInit } from '@angular/core';
 import {MatTableDataSource,MatPaginator} from '@angular/material';
-import { ApiService } from '../api.service';
+import { NodesService } from '../nodes.service';
 import {NODEDATA} from '../types'
 @Component({
   selector: 'app-details',
@@ -13,9 +13,8 @@ export class DetailsComponent implements AfterViewInit {
   
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
-  constructor(private api: ApiService) {
+  constructor(private nodes: NodesService) {
    
-  
    }
 
 

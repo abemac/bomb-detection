@@ -44,11 +44,24 @@ func CreateNodes(number uint64, ip string) {
 	}
 	log.I(number, "new nodes created, they are active")
 }
+
+func (n *Node) sample() int {
+	return rand.Intn(100)
+}
+
+func (n *Node) act() {
+	for {
+		lat := float64(rand.Intn(3) - 1)
+		long := float64(rand.Intn(3) - 2)
+		n.location.add(lat, long)
+		time.Sleep(time.Millisecond * 500)
+	}
+}
+
 func (n *Node) mainLoop() {
 	go n.act()
 	n.communicateWithManager()
 }
-
 func (n *Node) communicateWithManager() {
 	var conn net.Conn
 	var connected bool
@@ -78,7 +91,6 @@ func (n *Node) communicateWithManager() {
 		time.Sleep(time.Second * time.Duration(resp.NextCheckin))
 	}
 }
-
 func (n *Node) connectToManager() net.Conn {
 
 	for {
@@ -92,7 +104,6 @@ func (n *Node) connectToManager() net.Conn {
 	}
 
 }
-
 func (n *Node) sendInfoAndGetResponse(conn net.Conn) (*constants.ManagerToNodeJSON, error) {
 	message := new(constants.NodeToManagerJSON)
 	message.Latitude, message.Longitude = n.getGPSLoc()
@@ -107,30 +118,7 @@ func (n *Node) sendInfoAndGetResponse(conn net.Conn) (*constants.ManagerToNodeJS
 	conn.Write(messageJSON)
 	conn.Write(constants.DelimJSON)
 	log.D("Sent: ", *message)
-
 	return n.recvFrom(conn)
-}
-
-func (n *Node) sendSample(conn net.Conn) error {
-	message := new(constants.NodeToManagerJSON)
-	message.ID = n.assignedID
-	message.SampleValue = n.sample()
-	message.SampleValid = true
-	message.ManagerUID = n.muid
-	messageJSON, err := json.Marshal(message)
-	if err != nil {
-		return err
-	}
-	_, err = conn.Write(messageJSON)
-	if err != nil {
-		return err
-	}
-	_, err = conn.Write(constants.DelimJSON)
-	if err != nil {
-		return err
-	}
-	log.D("Sent: ", *message)
-	return nil
 }
 
 func (n *Node) recvFrom(conn net.Conn) (*constants.ManagerToNodeJSON, error) {
@@ -156,23 +144,26 @@ func (n *Node) handleResponse(msg *constants.ManagerToNodeJSON, conn net.Conn) e
 	return nil
 
 }
-
-func (n *Node) sample() int {
-	return rand.Intn(100)
-}
-func (n *Node) getGPSLoc() (float64, float64) {
-	n.location.lock.RLock()
-	defer n.location.lock.RUnlock()
-	return n.location.latitude, n.location.longitude
-}
-
-func (n *Node) act() {
-	for {
-		lat := float64(rand.Intn(3) - 1)
-		long := float64(rand.Intn(3) - 2)
-		n.location.add(lat, long)
-		time.Sleep(time.Millisecond * 500)
+func (n *Node) sendSample(conn net.Conn) error {
+	message := new(constants.NodeToManagerJSON)
+	message.ID = n.assignedID
+	message.SampleValue = n.sample()
+	message.SampleValid = true
+	message.ManagerUID = n.muid
+	messageJSON, err := json.Marshal(message)
+	if err != nil {
+		return err
 	}
+	_, err = conn.Write(messageJSON)
+	if err != nil {
+		return err
+	}
+	_, err = conn.Write(constants.DelimJSON)
+	if err != nil {
+		return err
+	}
+	log.D("Sent: ", *message)
+	return nil
 }
 func (l *Location) add(latitude float64, longitude float64) {
 	l.lock.RLock()
@@ -197,4 +188,10 @@ func (l *Location) add(latitude float64, longitude float64) {
 	l.latitude = lat
 	l.longitude = long
 	l.lock.Unlock()
+}
+
+func (n *Node) getGPSLoc() (float64, float64) {
+	n.location.lock.RLock()
+	defer n.location.lock.RUnlock()
+	return n.location.latitude, n.location.longitude
 }

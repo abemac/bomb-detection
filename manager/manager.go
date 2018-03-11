@@ -1,9 +1,7 @@
 package manager
 
 import (
-	"container/heap"
 	"encoding/json"
-	"math"
 	"math/rand"
 	"sync"
 	"sync/atomic"
@@ -59,48 +57,19 @@ func handleSuperNode(message *constants.NodeToManagerJSON, m *Manager) []byte {
 	} else {
 		id = m.checkIfSupernodeIDValid(message.ID, message.ManagerUID)
 	}
-
 	if message.SampleValid {
 		m.updateSuperNodeValue(id, message.SampleValue)
 		log.D("Receieved new sample from ID", id, ", value= ", message.SampleValue)
 		return nil
 	}
-	response := new(constants.ManagerToNodeJSON)
 	m.updateSuperNodeLocation(id, message.Latitude, message.Longitude)
+
+	response := new(constants.ManagerToNodeJSON)
 	response.PerformSample = true
 	response.AssignedID = id
 	response.ManagerUID = m.uid
 	response.NextCheckin = rand.Intn(5) + 5
-
-	pqMutex.Lock()
-	m.supernodesMutex.RLock()
-	numSuperNodes := len(m.supernodes)
-	m.supernodesMutex.RUnlock()
-	possibleBlocks := make([]*Block, numSuperNodes)
-	for i := 0; i < numSuperNodes; i++ {
-		possibleBlocks[i] = heap.Pop(&pq).(*Block)
-	}
-	closest := 0
-	dist := math.MaxFloat64
-	for i := 0; i < numSuperNodes; i++ {
-		latdist := getBlockLat(possibleBlocks[i].row) - message.Latitude
-		longdist := getBlockLong(possibleBlocks[i].col) - message.Longitude
-		thisdist := math.Sqrt(latdist*latdist + longdist*longdist)
-		if thisdist < dist {
-			dist = thisdist
-			closest = i
-		}
-	}
-	b := possibleBlocks[closest]
-
-	response.GoToLat = getBlockLat(b.row)
-	response.GoToLong = getBlockLong(b.col)
-	pq.updateVisitedTime(b, time.Now().Unix())
-
-	for i := 0; i < numSuperNodes; i++ {
-		heap.Push(&pq, possibleBlocks[i])
-	}
-	pqMutex.Unlock()
+	response.GoToLat, response.GoToLong = getBestSuperNodeLocation(m, message.Latitude, message.Longitude)
 
 	responseBytes, err := json.Marshal(response)
 	if err != nil {
@@ -117,19 +86,19 @@ func handleNode(message *constants.NodeToManagerJSON, m *Manager) []byte {
 	} else {
 		id = m.checkIfNodeIDValid(message.ID, message.ManagerUID)
 	}
-
 	if message.SampleValid {
 		m.updateNodeValue(id, message.SampleValue)
 		log.D("Receieved new sample from ID", id, ", value= ", message.SampleValue)
 		return nil
 	}
+	m.updateNodeLocation(id, message.Latitude, message.Longitude)
 
 	response := new(constants.ManagerToNodeJSON)
-	m.updateNodeLocation(id, message.Latitude, message.Longitude)
 	response.PerformSample = true
 	response.AssignedID = id
 	response.NextCheckin = rand.Intn(5) + 5
 	response.ManagerUID = m.uid
+
 	responseBytes, err := json.Marshal(response)
 	if err != nil {
 		panic(err.Error())
@@ -137,6 +106,7 @@ func handleNode(message *constants.NodeToManagerJSON, m *Manager) []byte {
 	log.D("Sending: ", *response)
 	return responseBytes
 }
+
 func (m *Manager) getNewID() uint64 {
 	//18,446,744,073,709,551,615 possible ids (18 quintillion)
 	//if everyone on the planet carried around 2 million smartphones there would still be ids to give

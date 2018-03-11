@@ -27,11 +27,6 @@ func (m *Manager) newNode() uint64 {
 	m.nodesMutex.Unlock()
 	return id
 }
-func (m *Manager) removeNode(id uint64) {
-	m.nodesMutex.Lock()
-	delete(m.nodes, id)
-	m.nodesMutex.Unlock()
-}
 func (m *Manager) checkIfNodeIDValid(id uint64, muid int64) uint64 {
 	m.nodesMutex.RLock()
 	_, ok := m.nodes[id]
@@ -48,7 +43,10 @@ func (m *Manager) updateNodeValue(id uint64, newSample int) {
 	m.nodesMutex.RLock()
 	n := m.nodes[id]
 	m.nodesMutex.RUnlock()
-	n.updateValue(newSample)
+	n.mutex.Lock()
+	n.Value = newSample
+	n.lastSampleTime = time.Now().Unix()
+	n.mutex.Unlock()
 }
 func (m *Manager) updateNodeLocation(id uint64, latitude float64, longitude float64) {
 	m.nodesMutex.RLock()
@@ -58,8 +56,7 @@ func (m *Manager) updateNodeLocation(id uint64, latitude float64, longitude floa
 	newRow := getRowFromLat(latitude)
 	newCol := getColFromLong(longitude)
 	if newRow != n.row || newCol != n.col {
-		blockMutex.Lock()
-		pqMutex.Lock()
+		blocksMutex.Lock()
 		if n.row != -1 {
 			pq.updateCount(blocks[n.row][n.col], blocks[n.row][n.col].count-1)
 		}
@@ -67,12 +64,22 @@ func (m *Manager) updateNodeLocation(id uint64, latitude float64, longitude floa
 		pq.updateVisitedTime(blocks[newRow][newCol], time.Now().Unix())
 		n.row = newRow
 		n.col = newCol
-		blockMutex.Unlock()
-		pqMutex.Unlock()
+		blocksMutex.Unlock()
 	}
 	n.Latitude = latitude
 	n.Longitude = longitude
 	n.mutex.Unlock()
+}
+func (m *Manager) removeNode(id uint64) {
+	m.nodesMutex.Lock()
+	delete(m.nodes, id)
+	m.nodesMutex.Unlock()
+}
+func (m *Manager) periodicallyPrintNodes(sleepTime int) {
+	for {
+		m.printNodes()
+		time.Sleep(time.Second * time.Duration(sleepTime))
+	}
 }
 func (m *Manager) printNodes() {
 	m.nodesMutex.RLock()
@@ -82,18 +89,4 @@ func (m *Manager) printNodes() {
 		val.mutex.RUnlock()
 	}
 	m.nodesMutex.RUnlock()
-}
-
-func (m *Manager) periodicallyPrintNodes(sleepTime int) {
-	for {
-		m.printNodes()
-		time.Sleep(time.Second * time.Duration(sleepTime))
-	}
-}
-
-func (n *node) updateValue(newSample int) {
-	n.mutex.Lock()
-	n.Value = newSample
-	n.lastSampleTime = time.Now().Unix()
-	n.mutex.Unlock()
 }

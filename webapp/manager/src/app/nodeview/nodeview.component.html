@@ -3,8 +3,8 @@
 
   </div>
   <div class="top right">
-      <button mat-raised-button (click)="onStartToggle($event)" class="item smallBtn"><i *ngIf="autorefresh"class="fa fa-pause" aria-hidden="true"></i>
-        <i *ngIf="!autorefresh" class="fa fa-play" aria-hidden="true"></i></button>
+      <!-- <button mat-raised-button (click)="onStartToggle($event)" class="item smallBtn"><i *ngIf="autorefresh"class="fa fa-pause" aria-hidden="true"></i>
+        <i *ngIf="!autorefresh" class="fa fa-play" aria-hidden="true"></i></button> -->
   </div>
   <div class="bottom left">
       <mat-accordion [multi]=true>
@@ -110,7 +110,7 @@
                 <p class="settings-label">Actual FPS ≈ {{fps_actual}}</p>
             </div>
             <div class="left">
-                <p class="settings-label">Number of nodes: {{api.Nodes().size}}</p>
+                <p class="settings-label">Number of nodes: {{nodes.Nodes().size}}</p>
             </div>
             <div class="left">
                 <p class="settings-label">feet / block ≈ {{(blockSizePixels/scale *69.172*5280).toFixed(1)}}</p>

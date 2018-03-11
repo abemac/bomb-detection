@@ -1,6 +1,6 @@
 import { Component,ViewChild,ElementRef,AfterViewInit  } from '@angular/core';
 import {NODEDATA} from '../types'
-import { ApiService } from '../api.service';
+import { NodesService } from '../nodes.service';
 @Component({
   selector: 'app-nodeview',
   templateUrl: './nodeview.component.html',
@@ -8,19 +8,36 @@ import { ApiService } from '../api.service';
 })
 export class NodeViewComponent implements AfterViewInit {
   
+ 
+  blockSizePixels:number=25
+  purpleIntensityPerNode=100
+  smoothPurple: boolean=true
+  smoothingTime:number=500
+  drawgrid: boolean=true;
+  drawnodes: boolean=true;
+  drawsupernodes: boolean=true;
+  nodeSizePixels :number=4
+  supernodeSizePixels :number=6
+  public fps :number=25
+  blockIntensites: number[][]
+  public updateInterval=7000
+  interpolate: boolean=true
+  
+
+  autorefresh:boolean;
+  refreshThreadHandle : any;
+  numNodes : number=0;
+  numSuperNodes: number=0
+  public fps_actual:string="0";
+  interpolation_step=0
+  interpolation_handle :any;
+  lastTime: number;
+  
   @ViewChild('canvas') c :ElementRef;
   context: CanvasRenderingContext2D;
   canvas: HTMLCanvasElement;
   canvasWidthPixels: number =window.innerWidth/2-100
   canvasHeightPixels:number = window.innerHeight-250
-  blockSizePixels:number=25
-  purpleIntensityPerNode=100
-  smoothPurple: boolean=true
-  smoothingTime:number=500
-  blockIntensites: number[][]
-
-  nodeSizePixels :number=4
-  supernodeSizePixels :number=6
   scale : number=1
   oldscale : number=1
   focusy : number;
@@ -28,24 +45,7 @@ export class NodeViewComponent implements AfterViewInit {
   trx : number=this.canvasWidthPixels/2
   try: number=this.canvasHeightPixels/2
 
-  autorefresh:boolean;
-  refreshThreadHandle : any;
-  btnColor: string="green"
-  drawgrid: boolean=true;
-  drawnodes: boolean=true;
-  drawsupernodes: boolean=true;
-  numNodes : number=0;
-  numSuperNodes: number=0
-
-
-  public fps :number=25
-  public fps_actual:string="0";
-  public updateInterval=7000
-   interpolation_step=0
-   interpolation_handle :any;
-   interpolate: boolean=true
-
-  constructor( public api: ApiService){
+  constructor( public nodes: NodesService){
     this.focusy=this.canvasHeightPixels/2
     this.focusx=this.canvasWidthPixels/2
     this.blockIntensites=new Array<Array<number>>()
@@ -56,114 +56,21 @@ export class NodeViewComponent implements AfterViewInit {
       }
       this.blockIntensites.push(row)
     }
+    this.nodes.updateNodeData(-1);
   }
   
   ngAfterViewInit() {
     this.canvas=(this.c.nativeElement as HTMLCanvasElement)
     this.context = this.canvas.getContext('2d');
     this.update()
-  }
-
-  drawGrid() {
-    //draw rows
-    for(var i=0;i<this.canvas.height;i+=this.blockSizePixels){
-      this.context.beginPath();
-      this.context.moveTo(0,i);
-      this.context.lineTo(this.canvas.width,i);
-      this.context.stroke();
-    }
-    //draw columns
-    for(var i=0;i<this.canvas.width;i+=this.blockSizePixels){
-      this.context.beginPath();
-      this.context.moveTo(i,0);
-      this.context.lineTo(i,this.canvas.height);
-      this.context.stroke();
-    }
-  }
-  
-  drawNode(x:number,y:number,supernode:boolean){
-    
-    if(supernode && this.drawsupernodes){
-      this.context.fillStyle="#ff4081"
-      this.context.strokeStyle="#ff4081"
-      this.context.beginPath()
-      this.context.arc(x,y,(this.supernodeSizePixels),0,2*Math.PI)
-     this.context.fill()
-    }else if (!supernode && this.drawnodes){
-      this.context.fillStyle="hsl(120, 100%, 50%)"
-      this.context.strokeStyle="hsl(120, 100%, 50%)"
-      this.context.beginPath()
-      this.context.arc(x,y,this.nodeSizePixels,0,2*Math.PI)
-      this.context.fill()
-    }
-    
-  }
-
-  colorSections(){
-    var intensity=0
-    for(var r=0;r*this.blockSizePixels<this.canvasHeightPixels;r++){
-      for(var c=0;c*this.blockSizePixels<this.canvasWidthPixels;c++){
-        intensity=Math.min(this.blockIntensites[r][c],1)
-        this.context.fillStyle="hsla(260,100%,43%,"+intensity.toString()+")"
-        this.context.fillRect(c*this.blockSizePixels+1,r*this.blockSizePixels+1,this.blockSizePixels-2,this.blockSizePixels-2)
-      }
-    }  
-  }
-  
-  drawNodes(){
-    this.context.save()
-    this.context.translate(this.trx,this.try)
-    //this.context.scale(this.scale,this.scale)
-    this.api.Nodes().forEach((node,key,nodes)=>{
-      this.drawNode(node.long*this.scale,node.lat*this.scale,node.sn)
-    })
-    this.context.restore()
-  }
-
-  getRandomColor() {
-    //see https://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
-  }
-
-  updateBlockCounts(){
-    var old
-    if (this.smoothPurple && this.autorefresh && this.interpolate){
-      old = JSON.parse(JSON.stringify(this.blockIntensites))
-    }
-    for(var r=0;r*this.blockSizePixels<this.canvasHeightPixels;r++){
-      for(var c=0;c*this.blockSizePixels<this.canvasWidthPixels;c++){
-      
-        this.blockIntensites[r][c]=0
-      }
-    }
-    this.api.Nodes().forEach((node,key,nodes)=>{
-      var rowi=Math.floor((this.try+node.lat*this.scale)/this.blockSizePixels)
-      var coli=Math.floor((this.trx+node.long*this.scale)/this.blockSizePixels)
-      
-      if(this.blockIntensites[rowi] != undefined){
-        if(this.blockIntensites[rowi][coli]!=undefined){
-          this.blockIntensites[rowi][coli]+=this.purpleIntensityPerNode/1000.0
-        }
-      }
-    });
-    if(this.smoothPurple && this.autorefresh && this.interpolate){
-      for(var r=0;r*this.blockSizePixels<this.canvasHeightPixels;r++){
-        for(var c=0;c*this.blockSizePixels<this.canvasWidthPixels;c++){
-          this.blockIntensites[r][c]=old[r][c]+(this.blockIntensites[r][c]-old[r][c])/(this.smoothingTime*this.fps/1000)
-        }
-      }
-    }
-
-
-
-    
+    this.onStartToggle(null)
   }
 
   update(){
-   
     clearInterval(this.interpolation_handle)
     var time=performance.now()
     this.fps_actual=(this.interpolation_step/(time-this.lastTime)*1000).toFixed(3)
-    this.api.shiftBuffer()
+    this.nodes.shiftBuffer()
     this.interpolation_step=0
     if(this.interpolate){
       this.lastTime=performance.now()
@@ -171,36 +78,10 @@ export class NodeViewComponent implements AfterViewInit {
     }else{
       this.updateView()
     }
-    this.api.updateNodeData(this.updateInterval *this.fps/1000);
+    this.nodes.updateNodeData(this.updateInterval *this.fps/1000);
 
   }
-   lastTime: number;
-  incrementInterpolationStep(){
-    
-    this.updateView()
-    this.api.Nodes().forEach((node,key,nodes)=>{
-        node.lat+=node.dlat;
-        node.long+=node.dlong;
-    })
-    this.interpolation_step++;
-    if(this.interpolation_step > this.updateInterval *this.fps/ 1000){
-      clearInterval(this.interpolation_handle)
-    }
-  }
-  onStartToggle(event){
-    if(!this.autorefresh){
-      this.autorefresh=true;
-      this.btnColor="red"
-      this.refreshThreadHandle = setInterval(() => {this.update();},this.updateInterval);
-    }else{
-      this.autorefresh=false;
-      this.btnColor="green"
-      clearInterval(this.refreshThreadHandle);
-    }
-  }
-  toggleGrid(){
-    
-  }
+
   updateView(){
     this.context.clearRect(0,0,this.canvasWidthPixels,this.canvasHeightPixels)
     var ratio=this.scale/this.oldscale
@@ -218,13 +99,51 @@ export class NodeViewComponent implements AfterViewInit {
       this.context.fillRect(0,0,this.canvasWidthPixels,this.canvasHeightPixels)
     }
 
-    this.drawNodes()
-    
-  
-    
+    this.drawNodes()  
     this.oldscale=this.scale
     
   }
+  updateBlockCounts(){
+    var old
+    if (this.smoothPurple && this.autorefresh && this.interpolate){
+      old = JSON.parse(JSON.stringify(this.blockIntensites))
+    }
+    for(var r=0;r*this.blockSizePixels<this.canvasHeightPixels;r++){
+      for(var c=0;c*this.blockSizePixels<this.canvasWidthPixels;c++){
+      
+        this.blockIntensites[r][c]=0
+      }
+    }
+    this.nodes.Nodes().forEach((node,key,nodes)=>{
+      var rowi=Math.floor((this.try+node.lat*this.scale)/this.blockSizePixels)
+      var coli=Math.floor((this.trx+node.long*this.scale)/this.blockSizePixels)
+      
+      if(this.blockIntensites[rowi] != undefined){
+        if(this.blockIntensites[rowi][coli]!=undefined){
+          this.blockIntensites[rowi][coli]+=this.purpleIntensityPerNode/1000.0
+        }
+      }
+    });
+    if(this.smoothPurple && this.autorefresh && this.interpolate){
+      for(var r=0;r*this.blockSizePixels<this.canvasHeightPixels;r++){
+        for(var c=0;c*this.blockSizePixels<this.canvasWidthPixels;c++){
+          this.blockIntensites[r][c]=old[r][c]+(this.blockIntensites[r][c]-old[r][c])/(this.smoothingTime*this.fps/1000)
+        }
+      }
+    }
+  }
+  incrementInterpolationStep(){
+    this.updateView()
+    this.nodes.Nodes().forEach((node,key,nodes)=>{
+        node.lat+=node.dlat;
+        node.long+=node.dlong;
+    })
+    this.interpolation_step++;
+    if(this.interpolation_step > this.updateInterval *this.fps/ 1000){
+      clearInterval(this.interpolation_handle)
+    }
+  }
+  
   onSliderChange(event) {
     this.blockSizePixels = event.value;
     this.blockIntensites=new Array<Array<number>>()
@@ -253,6 +172,71 @@ export class NodeViewComponent implements AfterViewInit {
     this.purpleIntensityPerNode=event.value;
     this.updateView()
   }
+  onStartToggle(event){
+    if(!this.autorefresh){
+      this.autorefresh=true;
+      this.refreshThreadHandle = setInterval(() => {this.update();},this.updateInterval);
+    }else{
+      this.autorefresh=false;
+      clearInterval(this.refreshThreadHandle);
+    }
+  }
+
+  drawGrid() {
+    //draw rows
+    for(var i=0;i<this.canvas.height;i+=this.blockSizePixels){
+      this.context.beginPath();
+      this.context.moveTo(0,i);
+      this.context.lineTo(this.canvas.width,i);
+      this.context.stroke();
+    }
+    //draw columns
+    for(var i=0;i<this.canvas.width;i+=this.blockSizePixels){
+      this.context.beginPath();
+      this.context.moveTo(i,0);
+      this.context.lineTo(i,this.canvas.height);
+      this.context.stroke();
+    }
+  }
+  drawNodes(){
+    this.context.save()
+    this.context.translate(this.trx,this.try)
+    //this.context.scale(this.scale,this.scale)
+    this.nodes.Nodes().forEach((node,key,nodes)=>{
+      this.drawNode(node.long*this.scale,node.lat*this.scale,node.sn)
+    })
+    this.context.restore()
+  }
+  drawNode(x:number,y:number,supernode:boolean){
+    
+    if(supernode && this.drawsupernodes){
+      this.context.fillStyle="#ff4081"
+      this.context.strokeStyle="#ff4081"
+      this.context.beginPath()
+      this.context.arc(x,y,(this.supernodeSizePixels),0,2*Math.PI)
+     this.context.fill()
+    }else if (!supernode && this.drawnodes){
+      this.context.fillStyle="hsl(120, 100%, 50%)"
+      this.context.strokeStyle="hsl(120, 100%, 50%)"
+      this.context.beginPath()
+      this.context.arc(x,y,this.nodeSizePixels,0,2*Math.PI)
+      this.context.fill()
+    }
+  }
+
+  colorSections(){
+    var intensity=0
+    for(var r=0;r*this.blockSizePixels<this.canvasHeightPixels;r++){
+      for(var c=0;c*this.blockSizePixels<this.canvasWidthPixels;c++){
+        intensity=Math.min(this.blockIntensites[r][c],1)
+        this.context.fillStyle="hsla(260,100%,43%,"+intensity.toString()+")"
+        this.context.fillRect(c*this.blockSizePixels+1,r*this.blockSizePixels+1,this.blockSizePixels-2,this.blockSizePixels-2)
+      }
+    }  
+  }
+  
+  
+  
   onMouseWheelUp(event){
     this.scale*=1.2
     this.focusx=event.offsetX
@@ -270,7 +254,6 @@ export class NodeViewComponent implements AfterViewInit {
     }
    
   }
-
    mouseDown :boolean=false
    handPtr : string="default-cursor"
    startX: number

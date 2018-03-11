@@ -38,6 +38,10 @@ func CreateSupernodes(number uint64, ip string) {
 	}
 	log.I(number, "new Supernodes created, they are active")
 }
+func (n *Supernode) sample() int {
+	return rand.Intn(100)
+}
+
 func (n *Supernode) mainLoop() {
 	var conn net.Conn
 	var connected bool
@@ -99,7 +103,30 @@ func (n *Supernode) sendInfoAndGetResponse(conn net.Conn) (*constants.ManagerToN
 
 	return n.recvFrom(conn)
 }
+func (n *Supernode) recvFrom(conn net.Conn) (*constants.ManagerToNodeJSON, error) {
+	bytes, err := bufio.NewReader(conn).ReadBytes(constants.DelimJSON[0])
+	if err != nil {
+		return nil, err
+	}
+	data := new(constants.ManagerToNodeJSON)
+	json.Unmarshal(bytes[:len(bytes)-1], data)
+	log.D("Received: ", *data)
+	return data, nil
+}
+func (n *Supernode) handleResponse(msg *constants.ManagerToNodeJSON, conn net.Conn) error {
+	n.assignedID = msg.AssignedID
+	n.muid = msg.ManagerUID
+	n.lat = msg.GoToLat
+	n.long = msg.GoToLong
+	if msg.PerformSample {
+		err := n.sendSample(conn)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 
+}
 func (n *Supernode) sendSample(conn net.Conn) error {
 	message := new(constants.NodeToManagerJSON)
 	message.ID = n.assignedID
@@ -123,35 +150,6 @@ func (n *Supernode) sendSample(conn net.Conn) error {
 	return nil
 }
 
-func (n *Supernode) recvFrom(conn net.Conn) (*constants.ManagerToNodeJSON, error) {
-	bytes, err := bufio.NewReader(conn).ReadBytes(constants.DelimJSON[0])
-	if err != nil {
-		return nil, err
-	}
-	data := new(constants.ManagerToNodeJSON)
-	json.Unmarshal(bytes[:len(bytes)-1], data)
-	log.D("Received: ", *data)
-	return data, nil
-}
-
-func (n *Supernode) handleResponse(msg *constants.ManagerToNodeJSON, conn net.Conn) error {
-	n.assignedID = msg.AssignedID
-	n.muid = msg.ManagerUID
-	n.lat = msg.GoToLat
-	n.long = msg.GoToLong
-	if msg.PerformSample {
-		err := n.sendSample(conn)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-
-}
-
-func (n *Supernode) sample() int {
-	return rand.Intn(100)
-}
 func (n *Supernode) getGPSLoc() (float64, float64) {
 	return n.lat, n.long
 }

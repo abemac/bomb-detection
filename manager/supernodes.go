@@ -1,7 +1,9 @@
 package manager
 
 import (
+	"container/heap"
 	"fmt"
+	"math"
 	"sync"
 	"time"
 )
@@ -23,11 +25,34 @@ func (m *Manager) newSuperNode() uint64 {
 	m.supernodesMutex.Unlock()
 	return id
 }
-func (m *Manager) removeSuperNode(id uint64) {
-	m.supernodesMutex.Lock()
-	delete(m.supernodes, id)
-	m.supernodesMutex.Unlock()
+
+func getBestSuperNodeLocation(m *Manager, currentLat float64, currentLong float64) (float64, float64) {
+	blocksMutex.Lock()
+	defer blocksMutex.Unlock()
+	numToConsider := int(math.Min(10, numBlockCols*numBlockRows))
+	possibleBlocks := make([]*Block, numToConsider)
+	for i := 0; i < numToConsider; i++ {
+		possibleBlocks[i] = heap.Pop(&pq).(*Block)
+	}
+	closest := 0
+	dist := math.MaxFloat64
+	for i := 0; i < numToConsider; i++ {
+		latdist := getBlockLat(possibleBlocks[i].row) - currentLat
+		longdist := getBlockLong(possibleBlocks[i].col) - currentLong
+		thisdist := math.Sqrt(latdist*latdist + longdist*longdist)
+		if thisdist < dist {
+			dist = thisdist
+			closest = i
+		}
+	}
+	b := possibleBlocks[closest]
+	pq.updateVisitedTime(b, time.Now().Unix())
+	for i := 0; i < numToConsider; i++ {
+		heap.Push(&pq, possibleBlocks[i])
+	}
+	return getBlockLat(b.row), getBlockLong(b.col)
 }
+
 func (m *Manager) checkIfSupernodeIDValid(id uint64, muid int64) uint64 {
 	m.supernodesMutex.RLock()
 	_, ok := m.supernodes[id]
@@ -43,7 +68,10 @@ func (m *Manager) updateSuperNodeValue(id uint64, newSample int) {
 	m.supernodesMutex.RLock()
 	n := m.supernodes[id]
 	m.supernodesMutex.RUnlock()
-	n.updateValue(newSample)
+	n.mutex.Lock()
+	n.Value = newSample
+	n.lastSampleTime = time.Now().Unix()
+	n.mutex.Unlock()
 }
 func (m *Manager) updateSuperNodeLocation(id uint64, latitude float64, longitude float64) {
 	m.supernodesMutex.RLock()
@@ -54,6 +82,11 @@ func (m *Manager) updateSuperNodeLocation(id uint64, latitude float64, longitude
 	n.Longitude = longitude
 	n.mutex.Unlock()
 
+}
+func (m *Manager) removeSuperNode(id uint64) {
+	m.supernodesMutex.Lock()
+	delete(m.supernodes, id)
+	m.supernodesMutex.Unlock()
 }
 func (m *Manager) printSuperNodes() {
 	m.supernodesMutex.RLock()
@@ -70,11 +103,4 @@ func (m *Manager) periodicallyPrintSuperNodes(sleepTime int) {
 		m.printSuperNodes()
 		time.Sleep(time.Second * time.Duration(sleepTime))
 	}
-}
-
-func (n *supernode) updateValue(newSample int) {
-	n.mutex.Lock()
-	n.Value = newSample
-	n.lastSampleTime = time.Now().Unix()
-	n.mutex.Unlock()
 }

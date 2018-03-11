@@ -5,34 +5,31 @@ import (
 	"sync"
 )
 
-const numcols = 20
-const numrows = 10
+const numBlockCols = 20
+const numBlockRows = 10
 
-func getRowFromLat(lat float64) int {
-	row := (lat + 90.0) / 180.0 * float64(numrows)
-	if int(row) == numrows {
-		return int(numrows - 1)
+// PriorityQueue implements heap.Interface and holds Blocks.
+type PriorityQueue []*Block
+
+var blocks = [numBlockRows][numBlockCols]*Block{}
+var pq PriorityQueue
+var blocksMutex sync.RWMutex
+
+func init() {
+	pq = make(PriorityQueue, numBlockRows*numBlockCols)
+	for i := 0; i < numBlockRows; i++ {
+		for j := 0; j < numBlockCols; j++ {
+			blocks[i][j] = &Block{
+				row:   i,
+				col:   j,
+				index: i*numBlockCols + j,
+				count: 0}
+			pq[i*numBlockCols+j] = blocks[i][j]
+		}
 	}
-	return int(row)
-}
-func getColFromLong(long float64) int {
-	col := (long + 180.0) / 360.0 * float64(numcols)
-	if int(col) == numcols {
-		return int(numcols - 1)
-	}
-	return int(col)
+	heap.Init(&pq)
 }
 
-func getBlockLat(row int) float64 {
-	latsPerBlock := 180.0 / numrows
-	return latsPerBlock*float64(row) + latsPerBlock/2.0 - 90.0
-}
-func getBlockLong(col int) float64 {
-	longsPerBlock := 360.0 / numcols
-	return longsPerBlock*float64(col) + longsPerBlock/2.0 - 180
-}
-
-// An Item is something we manage in a priority queue.
 type Block struct {
 	count       int64 // The priority of the item in the queue.
 	index       int   // The index of the item in the heap.
@@ -41,34 +38,32 @@ type Block struct {
 	col         int
 }
 
-// A PriorityQueue implements heap.Interface and holds Items.
-type PriorityQueue []*Block
-
-var blocks = [numrows][numcols]*Block{}
-var pq PriorityQueue
-var pqMutex sync.RWMutex
-var blockMutex sync.RWMutex
-
-func init() {
-	pq = make(PriorityQueue, numrows*numcols)
-	for i := 0; i < numrows; i++ {
-		for j := 0; j < numcols; j++ {
-			blocks[i][j] = &Block{
-				row:   i,
-				col:   j,
-				index: i*numcols + j,
-				count: 0}
-			pq[i*numcols+j] = blocks[i][j]
-		}
+func getRowFromLat(lat float64) int {
+	row := (lat + 90.0) / 180.0 * float64(numBlockRows)
+	if int(row) == numBlockRows {
+		return int(numBlockRows - 1)
 	}
-	heap.Init(&pq)
+	return int(row)
+}
+func getColFromLong(long float64) int {
+	col := (long + 180.0) / 360.0 * float64(numBlockCols)
+	if int(col) == numBlockCols {
+		return int(numBlockCols - 1)
+	}
+	return int(col)
+}
+func getBlockLat(row int) float64 {
+	latsPerBlock := 180.0 / numBlockRows
+	return latsPerBlock*float64(row) + latsPerBlock/2.0 - 90.0
+}
+func getBlockLong(col int) float64 {
+	longsPerBlock := 360.0 / numBlockCols
+	return longsPerBlock*float64(col) + longsPerBlock/2.0 - 180
 }
 
 func (pq PriorityQueue) Len() int { return len(pq) }
 
 func (pq PriorityQueue) Less(i, j int) bool { //Less = "is more important"
-
-	// return pq[i].lastVisited < pq[j].lastVisited
 	timediff := pq[j].lastVisited - pq[i].lastVisited
 	countdiff := pq[j].count - pq[i].count
 	score := timediff + countdiff
@@ -98,7 +93,6 @@ func (pq *PriorityQueue) Pop() interface{} {
 	return item
 }
 
-// update modifies the priority and value of an Item in the queue.
 func (pq *PriorityQueue) updateCount(b *Block, count int64) {
 	b.count = count
 	heap.Fix(pq, b.index)
