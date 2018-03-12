@@ -25,6 +25,7 @@ export class NodeViewComponent implements AfterViewInit {
   
 
   autorefresh:boolean;
+  loading:boolean=true;
   refreshThreadHandle : any;
   numNodes : number=0;
   numSuperNodes: number=0
@@ -64,6 +65,7 @@ export class NodeViewComponent implements AfterViewInit {
     this.context = this.canvas.getContext('2d');
     this.update()
     this.onStartToggle(null)
+    setTimeout(()=>this.loading=false,2*this.updateInterval)
   }
 
   update(){
@@ -143,7 +145,10 @@ export class NodeViewComponent implements AfterViewInit {
       clearInterval(this.interpolation_handle)
     }
   }
-  
+  showLoadingSpinner(event){
+    this.loading=true;
+    setTimeout(()=>this.loading=false,this.updateInterval)
+  }
   onSliderChange(event) {
     this.blockSizePixels = event.value;
     this.blockIntensites=new Array<Array<number>>()

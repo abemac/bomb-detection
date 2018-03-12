@@ -3,8 +3,7 @@
 
   </div>
   <div class="top right">
-      <!-- <button mat-raised-button (click)="onStartToggle($event)" class="item smallBtn"><i *ngIf="autorefresh"class="fa fa-pause" aria-hidden="true"></i>
-        <i *ngIf="!autorefresh" class="fa fa-play" aria-hidden="true"></i></button> -->
+      <i *ngIf="loading" class="fa fa-spinner fa-spin" style="font-size:24px"></i>
   </div>
   <div class="bottom left">
       <mat-accordion [multi]=true>
@@ -82,11 +81,12 @@
               </div>
               <div class="left">
                 <p class="settings-label">Interpolate node position</p>
-                <mat-checkbox class="item" [(ngModel)]="interpolate"></mat-checkbox>
+                <mat-checkbox class="item" [(ngModel)]="interpolate" (change)="showLoadingSpinner($event)"></mat-checkbox>
                 <p class="settings-label">FPS </p>
                 <mat-slider class="item"
                 [max]=30
                 [min]=1
+                (change)="showLoadingSpinner($event)"
                 [(ngModel)]="fps"
                 [disabled]="!interpolate"
                 [thumbLabel]=true>
