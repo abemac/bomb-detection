@@ -11,9 +11,9 @@ mat-horizontal-stepper {
 }
 .nsew{
     display:grid;
-    grid-template-columns: repeat(3,30px);
-    grid-template-rows: repeat(3,30px);
-    grid-gap: 7px;
+    grid-template-columns: repeat(3,35px);
+    grid-template-rows: repeat(3,35px);
+    grid-gap: 5px;
     grid-column: 1;
     text-align:center;
     justify-self: center;
@@ -23,29 +23,33 @@ mat-horizontal-stepper {
 .nsew .north{
     grid-row: 1;
     grid-column: 2;
-    width:30px;
+    width:35px;
+    height:35px;
 }
 .nsew .south{
     grid-row: 3;
     grid-column: 2;
-    width:30px;
+    width:35px;
+    height:35px;
 }
 .nsew .east{
     grid-row: 2;
     grid-column: 3;
-    width:30px;
+    width:35px;
+    height:35px;
 }
 .nsew .west{
     grid-row: 2;
     grid-column: 1;
-    width:30px;
+    width:35px;
+    height:35px;
 }
 .nsewshow{
     border:1px solid black;
-    padding:5px;
+    padding-left:5px;
     border-radius: 5px;
-    margin-top:-40px;
-    text-align: center;
+    text-align: right;
+    margin:1px;
 }
 .configrow{
     display:grid;
