@@ -17,14 +17,15 @@ type Node struct {
 	managerIP   string
 	managerPort uint16
 	assignedID  uint64
-	location    Location
+	info        NodeInfo
 	muid        int64
 }
 
-type Location struct {
-	latitude  float64
-	longitude float64
-	lock      sync.RWMutex
+type NodeInfo struct {
+	latitude          float64
+	longitude         float64
+	batteryPercentage float32
+	lock              sync.RWMutex
 }
 
 //NewNode creates a new Node
@@ -33,7 +34,8 @@ func NewNode(ip string) {
 	n.managerIP = ip
 	n.managerPort = 12345
 	n.assignedID = constants.ID_NOT_ASSIGNED
-	n.location.latitude, n.location.longitude = rand.Float64()*180-90, rand.Float64()*180
+	n.info.latitude, n.info.longitude = rand.Float64()*180-90, rand.Float64()*180
+	n.info.batteryPercentage = rand.Float32()
 	go n.mainLoop()
 	log.V("New Node created")
 }
@@ -53,7 +55,7 @@ func (n *Node) act() {
 	for {
 		lat := float64(rand.Intn(3) - 1)
 		long := float64(rand.Intn(3) - 2)
-		n.location.add(lat, long)
+		n.info.add(lat, long)
 		time.Sleep(time.Millisecond * 500)
 	}
 }
@@ -110,6 +112,7 @@ func (n *Node) sendInfoAndGetResponse(conn net.Conn) (*constants.ManagerToNodeJS
 	message.ID = n.assignedID
 	message.SampleValid = false
 	message.ManagerUID = n.muid
+	message.BatteryPercent = n.info.batteryPercentage
 
 	messageJSON, err := json.Marshal(message)
 	if err != nil {
@@ -165,10 +168,10 @@ func (n *Node) sendSample(conn net.Conn) error {
 	log.D("Sent: ", *message)
 	return nil
 }
-func (l *Location) add(latitude float64, longitude float64) {
-	l.lock.RLock()
-	lat, long := l.latitude, l.longitude
-	l.lock.RUnlock()
+func (i *NodeInfo) add(latitude float64, longitude float64) {
+	i.lock.RLock()
+	lat, long := i.latitude, i.longitude
+	i.lock.RUnlock()
 
 	lat += latitude
 	long += longitude
@@ -184,14 +187,14 @@ func (l *Location) add(latitude float64, longitude float64) {
 	if long < -180 {
 		long += 360
 	}
-	l.lock.Lock()
-	l.latitude = lat
-	l.longitude = long
-	l.lock.Unlock()
+	i.lock.Lock()
+	i.latitude = lat
+	i.longitude = long
+	i.lock.Unlock()
 }
 
 func (n *Node) getGPSLoc() (float64, float64) {
-	n.location.lock.RLock()
-	defer n.location.lock.RUnlock()
-	return n.location.latitude, n.location.longitude
+	n.info.lock.RLock()
+	defer n.info.lock.RUnlock()
+	return n.info.latitude, n.info.longitude
 }

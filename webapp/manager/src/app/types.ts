@@ -5,4 +5,5 @@ export class NODEDATA{
     sn: boolean;
     dlat:number;
     dlong:number;
+    bp:number;
 }

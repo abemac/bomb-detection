@@ -8,7 +8,7 @@ import {NODEDATA} from '../types'
   styleUrls: ['./details.component.css']
 })
 export class DetailsComponent implements AfterViewInit {
-  displayedColumns = ['id', 'latitude', 'longitude'];
+  displayedColumns = ['id', 'latitude', 'longitude','battery'];
   dataSource :any;
   
   @ViewChild(MatPaginator) paginator: MatPaginator;

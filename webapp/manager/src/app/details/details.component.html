@@ -22,6 +22,11 @@
         <mat-cell *matCellDef="let element"> {{element.long}} </mat-cell>
       </ng-container>
 
+      <ng-container matColumnDef="battery">
+        <mat-header-cell *matHeaderCellDef> Battery </mat-header-cell>
+        <mat-cell *matCellDef="let element"> {{element.bp}} </mat-cell>
+      </ng-container>
+
 
       <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
       <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>

@@ -42,7 +42,7 @@ func (w *WebUI) handleNodeInfoRequest(resp http.ResponseWriter, req *http.Reques
 			first = false
 		}
 		v.mutex.RLock()
-		fmt.Fprintf(resp, `{"id":%d,"lat":%f,"long":%f,"sn":false}`, k, v.Latitude, v.Longitude)
+		fmt.Fprintf(resp, `{"id":%d,"lat":%f,"long":%f,"sn":false,"bp":%f}`, k, v.Latitude, v.Longitude, v.BatteryPercentage)
 		v.mutex.RUnlock()
 	}
 	w.mgr.nodesMutex.Unlock()
@@ -50,7 +50,7 @@ func (w *WebUI) handleNodeInfoRequest(resp http.ResponseWriter, req *http.Reques
 	for k, v := range w.mgr.supernodes {
 		fmt.Fprintf(resp, ",")
 		v.mutex.RLock()
-		fmt.Fprintf(resp, `{"id":%d,"lat":%f,"long":%f,"sn":true}`, k, v.Latitude, v.Longitude)
+		fmt.Fprintf(resp, `{"id":%d,"lat":%f,"long":%f,"sn":true,"bp":1.0}`, k, v.Latitude, v.Longitude)
 		v.mutex.RUnlock()
 	}
 	fmt.Fprintf(resp, "]}")

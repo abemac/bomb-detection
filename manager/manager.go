@@ -92,6 +92,7 @@ func handleNode(message *constants.NodeToManagerJSON, m *Manager) []byte {
 		return nil
 	}
 	m.updateNodeLocation(id, message.Latitude, message.Longitude)
+	m.updateNodeBatteryLevel(id, message.BatteryPercent)
 
 	response := new(constants.ManagerToNodeJSON)
 	response.PerformSample = true

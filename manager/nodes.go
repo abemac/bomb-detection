@@ -7,13 +7,14 @@ import (
 )
 
 type node struct {
-	Value          int
-	Latitude       float64
-	Longitude      float64
-	lastSampleTime int64 //unix timestamp
-	mutex          *sync.RWMutex
-	row            int
-	col            int
+	Value             int
+	Latitude          float64
+	Longitude         float64
+	BatteryPercentage float32
+	lastSampleTime    int64 //unix timestamp
+	mutex             *sync.RWMutex
+	row               int
+	col               int
 }
 
 func (m *Manager) newNode() uint64 {
@@ -46,6 +47,14 @@ func (m *Manager) updateNodeValue(id uint64, newSample int) {
 	n.mutex.Lock()
 	n.Value = newSample
 	n.lastSampleTime = time.Now().Unix()
+	n.mutex.Unlock()
+}
+func (m *Manager) updateNodeBatteryLevel(id uint64, batteryLevel float32) {
+	m.nodesMutex.RLock()
+	n := m.nodes[id]
+	m.nodesMutex.RUnlock()
+	n.mutex.Lock()
+	n.BatteryPercentage = batteryLevel
 	n.mutex.Unlock()
 }
 func (m *Manager) updateNodeLocation(id uint64, latitude float64, longitude float64) {
