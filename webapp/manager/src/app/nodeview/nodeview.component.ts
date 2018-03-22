@@ -25,6 +25,7 @@ export class NodeViewComponent implements AfterViewInit {
   
 
   autorefresh:boolean;
+  paused:boolean=false;
   loading:boolean=true;
   refreshThreadHandle : any;
   numNodes : number=0;
@@ -116,16 +117,29 @@ export class NodeViewComponent implements AfterViewInit {
         this.blockIntensites[r][c]=0
       }
     }
-    this.nodes.Nodes().forEach((node,key,nodes)=>{
-      var rowi=Math.floor((this.try+node.lat*this.scale)/this.blockSizePixels)
-      var coli=Math.floor((this.trx+node.long*this.scale)/this.blockSizePixels)
-      
-      if(this.blockIntensites[rowi] != undefined){
-        if(this.blockIntensites[rowi][coli]!=undefined){
-          this.blockIntensites[rowi][coli]+=this.purpleIntensityPerNode/1000.0
+    if(this.paused){
+      this.nodes.SavedNodes().forEach((node,key,nodes)=>{
+        var rowi=Math.floor((this.try+node.lat*this.scale)/this.blockSizePixels)
+        var coli=Math.floor((this.trx+node.long*this.scale)/this.blockSizePixels)
+        
+        if(this.blockIntensites[rowi] != undefined){
+          if(this.blockIntensites[rowi][coli]!=undefined){
+            this.blockIntensites[rowi][coli]+=this.purpleIntensityPerNode/1000.0
+          }
         }
-      }
-    });
+      });
+    }else{
+      this.nodes.Nodes().forEach((node,key,nodes)=>{
+        var rowi=Math.floor((this.try+node.lat*this.scale)/this.blockSizePixels)
+        var coli=Math.floor((this.trx+node.long*this.scale)/this.blockSizePixels)
+        
+        if(this.blockIntensites[rowi] != undefined){
+          if(this.blockIntensites[rowi][coli]!=undefined){
+            this.blockIntensites[rowi][coli]+=this.purpleIntensityPerNode/1000.0
+          }
+        }
+      });
+    }
     if(this.smoothPurple && this.autorefresh && this.interpolate){
       for(var r=0;r*this.blockSizePixels<this.canvasHeightPixels;r++){
         for(var c=0;c*this.blockSizePixels<this.canvasWidthPixels;c++){
@@ -165,6 +179,11 @@ export class NodeViewComponent implements AfterViewInit {
     this.smoothPurple=oldSmooth;
     
   }
+  onFPSchange(event){
+    this.showLoadingSpinner(event);
+    this.nodes.recalc(this.updateInterval *event.value/1000);
+
+  }
   onNodeSliderChange(event){
     this.nodeSizePixels=event.value
     this.updateView()
@@ -184,6 +203,12 @@ export class NodeViewComponent implements AfterViewInit {
     }else{
       this.autorefresh=false;
       clearInterval(this.refreshThreadHandle);
+    }
+  }
+  onPause(event){
+    this.paused=!this.paused;
+    if(this.paused){
+      this.nodes.saveCurrentFrame();
     }
   }
 
@@ -206,10 +231,15 @@ export class NodeViewComponent implements AfterViewInit {
   drawNodes(){
     this.context.save()
     this.context.translate(this.trx,this.try)
-    //this.context.scale(this.scale,this.scale)
-    this.nodes.Nodes().forEach((node,key,nodes)=>{
-      this.drawNode(node.long*this.scale,node.lat*this.scale,node.sn)
-    })
+    if(this.paused){
+      this.nodes.SavedNodes().forEach((node,key,nodes)=>{
+        this.drawNode(node.long*this.scale,node.lat*this.scale,node.sn)
+      });
+    }else{
+      this.nodes.Nodes().forEach((node,key,nodes)=>{
+        this.drawNode(node.long*this.scale,node.lat*this.scale,node.sn)
+      });
+    }
     this.context.restore()
   }
   drawNode(x:number,y:number,supernode:boolean){

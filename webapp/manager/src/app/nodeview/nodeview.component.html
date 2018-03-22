@@ -4,6 +4,8 @@
   </div>
   <div class="top right">
       <i *ngIf="loading" class="fa fa-spinner fa-spin" style="font-size:24px"></i>
+      <button title="Freeze Animation" mat-raised-button (click)="onPause($event)" class="item smallBtn"><i *ngIf="!paused"class="fa fa-pause" aria-hidden="true"></i>
+        <i *ngIf="paused" class="fa fa-play" aria-hidden="true"></i></button>
   </div>
   <div class="bottom left">
       <mat-accordion [multi]=true>
@@ -86,7 +88,7 @@
                 <mat-slider class="item"
                 [max]=30
                 [min]=1
-                (change)="showLoadingSpinner($event)"
+                (change)="onFPSchange($event)"
                 [(ngModel)]="fps"
                 [disabled]="!interpolate"
                 [thumbLabel]=true>
