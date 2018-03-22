@@ -21,13 +21,16 @@ import {MatTableModule} from '@angular/material/table';
 import { DetailsComponent } from './details/details.component';
 import {MatPaginatorModule} from '@angular/material/paginator';
 import {MatExpansionModule} from '@angular/material/expansion';
+import { CreatorComponent } from './creator/creator.component';
+import {MatStepperModule} from '@angular/material/stepper';
 
 @NgModule({
   declarations: [
     AppComponent,
     NodeViewComponent,
     MouseListenerDirective,
-    DetailsComponent
+    DetailsComponent,
+    CreatorComponent
   ],
   imports: [
     BrowserModule,
@@ -37,6 +40,7 @@ import {MatExpansionModule} from '@angular/material/expansion';
     MatGridListModule,
     MatSliderModule,
     FormsModule,
+    ReactiveFormsModule,
     MatCardModule,
     MatInputModule,
     MatFormFieldModule,
@@ -45,7 +49,8 @@ import {MatExpansionModule} from '@angular/material/expansion';
     MatCheckboxModule,
     MatTableModule,
     MatPaginatorModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatStepperModule
   ],
   providers: [NodesService],
   bootstrap: [AppComponent]

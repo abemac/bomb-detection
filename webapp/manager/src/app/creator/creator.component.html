@@ -1,0 +1,64 @@
+<div class="mainwrapper">
+  <mat-horizontal-stepper [linear]="true" #stepper="matHorizontalStepper">
+    <mat-step [stepControl]="firstFormGroup">
+      <form [formGroup]="firstFormGroup">
+        <div class="inputswrapper">
+          <ng-template matStepLabel>Simulation Name</ng-template>
+          <mat-form-field>
+            <input matInput placeholder="Enter name" formControlName="firstCtrl" required>
+          </mat-form-field><br>
+          <mat-form-field style="width:400px;height:100px">
+            <textarea matInput placeholder="Description" style="width:400px;height:100px"></textarea>
+          </mat-form-field>
+        </div>
+        <div style="margin:20px">
+          <button mat-raised-button matStepperNext>Next</button>
+        </div>
+      </form>
+    </mat-step>
+    <mat-step [stepControl]="secondFormGroup">
+      <form [formGroup]="secondFormGroup">
+        <ng-template matStepLabel>Define Nodes</ng-template>
+        <div *ngFor="let row of nodeConfigRows;let $i=index">
+          <div class="configrow">
+           <div class="nsew">
+              <mat-form-field class="north">
+                  <input matInput type="text" title="north movement probability" formControlName="secondCtrl" class="nsewshow" [(ngModel)]="nodeConfigRows[$i].north" >
+              </mat-form-field>
+              <mat-form-field class="east">
+                  <input matInput type="text" title="east movement probability" formControlName="secondCtrl" class="nsewshow" [(ngModel)]="nodeConfigRows[$i].east">
+              </mat-form-field>
+              <mat-form-field  class="south">
+                  <input matInput type="text" title="south movement probability" formControlName="secondCtrl" class="nsewshow" [(ngModel)]="nodeConfigRows[$i].south">
+              </mat-form-field>
+              <mat-form-field  class="west">
+                  <input matInput type="text" title="west movement probability" formControlName="secondCtrl" class="nsewshow" [(ngModel)]="nodeConfigRows[$i].west">
+              </mat-form-field>
+            </div>
+            
+            <mat-form-field class="col2" style="width:70px">
+                <input matInput type="number" title="number of nodes to create" formControlName="secondCtrl" [(ngModel)]="nodeConfigRows[$i].num" style="width:70px; text-align:center">
+            </mat-form-field>  
+            <mat-checkbox class="col3" ng-true-value="1"  ng-false-value="0" title="should be a supernode?" formControlName="secondCtrl" [(ngModel)]="nodeConfigRows[$i].supernode">Supernode</mat-checkbox>
+            <mat-checkbox class="col4" ng-true-value="1"  ng-false-value="0" title="all nodes should act as a group?" formControlName="secondCtrl" [(ngModel)]="nodeConfigRows[$i].group">Group</mat-checkbox>
+            <i title="delete row" class="fa fa-times col5" style="color:red;cursor:pointer" (click)="delrow($i)"></i>
+          </div>
+        </div>
+        
+        <button mat-button (click)="addRow()"><i class="fa fa-plus"></i>&nbsp;Add Row</button>
+        <div>
+          <button mat-raised-button matStepperPrevious style="margin:20px;margin-right:0px" >Back</button>
+          <button mat-raised-button matStepperNext style="margin:20px;margin-right:0px">Next</button>
+        </div>
+      </form>
+    </mat-step>
+    <mat-step>
+      <ng-template matStepLabel>Done</ng-template>
+      You are now done.
+      <div>
+        <button mat-button matStepperPrevious>Back</button>
+        <button mat-button (click)="stepper.reset()">Reset</button>
+      </div>
+    </mat-step>
+  </mat-horizontal-stepper>
+</div>

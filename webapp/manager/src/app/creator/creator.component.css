@@ -1,0 +1,80 @@
+.mainwrapper{
+    text-align: center;
+}
+mat-horizontal-stepper {
+    width:50%;
+    margin:auto;
+}
+.inputswrapper{
+    display:inline-block;
+    text-align: left;
+}
+.nsew{
+    display:grid;
+    grid-template-columns: repeat(3,30px);
+    grid-template-rows: repeat(3,30px);
+    grid-gap: 7px;
+    grid-column: 1;
+    text-align:center;
+    justify-self: center;
+    align-self: center;
+
+}
+.nsew .north{
+    grid-row: 1;
+    grid-column: 2;
+    width:30px;
+}
+.nsew .south{
+    grid-row: 3;
+    grid-column: 2;
+    width:30px;
+}
+.nsew .east{
+    grid-row: 2;
+    grid-column: 3;
+    width:30px;
+}
+.nsew .west{
+    grid-row: 2;
+    grid-column: 1;
+    width:30px;
+}
+.nsewshow{
+    border:1px solid black;
+    padding:5px;
+    border-radius: 5px;
+    margin-top:-40px;
+    text-align: center;
+}
+.configrow{
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 0.5fr;
+    grid-template-rows: 1fr;
+    grid-gap: 7px; 
+    margin-bottom: 50px;
+}
+.configrow .col2{
+    grid-column: 2;
+    text-align:center;
+    justify-self: center;
+    align-self: center;
+}
+.configrow .col3{
+    grid-column: 3;
+    text-align:center;
+    justify-self: center;
+    align-self: center;
+}
+.configrow .col4{
+    grid-column: 4;
+    text-align:center;
+    justify-self: center;
+    align-self: center;
+}
+.configrow .col5{
+    grid-column: 5;
+    text-align:center;
+    justify-self: center;
+    align-self: center;
+}
