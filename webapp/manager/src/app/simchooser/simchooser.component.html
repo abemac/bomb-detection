@@ -1,0 +1,30 @@
+<div style="text-align: center">
+    <h1 mat-dialog-title>Start a Simulation</h1>
+</div>
+
+<div mat-dialog-content style="overflow: hidden">
+    <div class="mainwrapper">
+    <div class="left mat-typography">
+      <h3>Chose a simulation configuration, or make one in the <span (click)="goToCreator()">Creator</span></h3>
+      <mat-select placeholder="Choose Configuration" style="width:200px" (selectionChange)="onChoose($event)">
+          <mat-option *ngFor="let file of files" [value]="file">
+            {{ file }}
+          </mat-option>
+      </mat-select>
+      <br>
+      <h3 style="margin-top:40px">Description:</h3>
+      <textarea class="descpprev" value="{{description}}" readonly></textarea>
+    </div>
+    <div class="right">
+        <div class="mat-typography">
+            <h3 style="margin-top:40px">JSON Preview:</h3>
+        </div>
+        <textarea class="jsonpreview" placeholder="{{jsontext | json}}" readonly></textarea>
+    </div>
+    <div class="footer">
+        <button mat-button (click)="onCancelClick()">Cancel</button>
+        <button mat-raised-button style="margin-left:7px">Start</button>
+    </div>
+  </div>
+</div>
+

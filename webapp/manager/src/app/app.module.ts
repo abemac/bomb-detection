@@ -23,6 +23,10 @@ import {MatPaginatorModule} from '@angular/material/paginator';
 import {MatExpansionModule} from '@angular/material/expansion';
 import { CreatorComponent } from './creator/creator.component';
 import {MatStepperModule} from '@angular/material/stepper';
+import { SimchooserComponent } from './simchooser/simchooser.component';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatSelectModule} from '@angular/material/select';
+
 
 @NgModule({
   declarations: [
@@ -30,7 +34,8 @@ import {MatStepperModule} from '@angular/material/stepper';
     NodeViewComponent,
     MouseListenerDirective,
     DetailsComponent,
-    CreatorComponent
+    CreatorComponent,
+    SimchooserComponent
   ],
   imports: [
     BrowserModule,
@@ -50,9 +55,12 @@ import {MatStepperModule} from '@angular/material/stepper';
     MatTableModule,
     MatPaginatorModule,
     MatExpansionModule,
-    MatStepperModule
+    MatStepperModule,
+    MatDialogModule,
+    MatSelectModule
   ],
   providers: [NodesService],
+  entryComponents: [SimchooserComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

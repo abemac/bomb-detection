@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import { HttpClient,HttpHeaders } from '@angular/common/http';
+
 declare var jquery:any;
 declare var $ :any;
 
@@ -15,14 +17,16 @@ export class CreatorComponent implements OnInit {
   
   nodeConfigRows: ConfigRow[]=new Array<ConfigRow>();
 
-  constructor(private _formBuilder: FormBuilder) {  
+
+  constructor(private _formBuilder: FormBuilder,private http: HttpClient) {  
     
   
   }
 
   ngOnInit() {
     this.firstFormGroup = this._formBuilder.group({
-      firstCtrl: ['', Validators.required]
+      filename: ['', Validators.required],
+      description: ['']
     });
     this.secondFormGroup = this._formBuilder.group({
       
@@ -36,12 +40,43 @@ export class CreatorComponent implements OnInit {
   delrow(index){
     this.nodeConfigRows.splice(index,1)
   }
-
-  downloadConfig(){
-
-  }
+  
   saveConfig(){
-    
+    var config=[];
+    config.push(
+      `{"filename":"${this.firstFormGroup.get('filename').value}.json",`,
+      `"description":"${this.firstFormGroup.get('description').value}",`,
+    )
+    config.push(`"rows": [`)
+    var first=true;
+    this.nodeConfigRows.forEach((row,index,rows)=>{
+      if (!first){
+        config.push(",");
+      }else{
+        first=false;
+      }
+      config.push(
+        `{"north":${row.north},`,
+        `"east":${row.east},`,
+        `"south":${row.south},`,
+        `"west":${row.west},`,
+        `"num":${row.num},`,
+        `"supernode":${row.supernode},`,
+        `"group":${row.group}}`
+      );
+    });
+    config.push(`]}`)
+
+    var jsonStr= config.join("")
+    var escapedJson= jsonStr.replace(/[\b]/g, '\\b')
+                            .replace(/[\f]/g, '\\f')
+                            .replace(/[\n]/g, '\\n')
+                            .replace(/[\r]/g, '\\r')
+                            .replace(/[\t]/g, '\\t')
+    var httpOptions = {
+      headers: new HttpHeaders({ 'Filename': `${this.firstFormGroup.get('filename').value}.json`})
+    };
+    this.http.post('/UploadConfig',escapedJson,httpOptions ).toPromise().then(resp=>{});
   }
 
 }

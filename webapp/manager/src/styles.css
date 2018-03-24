@@ -5,3 +5,8 @@
 html,body{
     margin:0;
 }
+.mat-dialog-container{
+    border: 3px solid black;
+    border-radius: 10px !important;
+    background:#9eb5e1;
+}

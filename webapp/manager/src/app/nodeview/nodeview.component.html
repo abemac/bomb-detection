@@ -8,118 +8,121 @@
         <i *ngIf="paused" class="fa fa-play" aria-hidden="true"></i></button>
   </div>
   <div class="bottom left">
-      <mat-accordion [multi]=true>
-        <mat-expansion-panel [expanded]=true>
+      <div>
+        <button mat-raised-button style="margin:20px" (click)="openDialog()">Start a Simulation</button>
+        <mat-accordion [multi]=true>
+          <mat-expansion-panel [expanded]=false>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                Display Options
+              </mat-panel-title>
+              <mat-panel-description>
+                change what's shown on the right
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+            <div class="left-container">
+                <div class="left">
+                <p class="settings-label">Block size (px)</p>
+                  <mat-slider class="item"
+                    [max]=200
+                    [min]=10 
+                    [(ngModel)]="blockSizePixels" 
+                    (input)="onSliderChange($event)"
+                    [thumbLabel]=true
+                    [disabled]="!drawgrid">
+                  </mat-slider>
+                  <p class="settings-label">Show grid</p>
+                  <mat-checkbox class="item" [(ngModel)]="drawgrid" (change)="updateView()"></mat-checkbox>
+                </div>
+                <div class="left">
+                  <p class="settings-label">Purple intensity</p>
+                  <mat-slider class="item"
+                    [max]=200
+                    [min]=1 
+                    [(ngModel)]="purpleIntensityPerNode" 
+                    [thumbLabel]=true
+                    (input)="onPurpleChange($event)"
+                    [disabled]="!drawgrid">
+                  </mat-slider>
+                </div>
+                <div class="left">
+                    <p class="settings-label">Smooth purple</p>
+                  <mat-checkbox class="item" [(ngModel)]="smoothPurple" (change)="updateView()" [disabled]="!drawgrid"></mat-checkbox>
+                  <p class="settings-label">Smoothing time (ms)</p>
+                  <mat-slider class="item"
+                    [max]=1000
+                    [min]=50 
+                    [(ngModel)]="smoothingTime" 
+                    [thumbLabel]=true
+                    [disabled]="!drawgrid || !smoothPurple">
+                  </mat-slider>
+                </div>
+                <div class="left">
+                  <p class="settings-label">Node size (px)</p>
+                  <mat-slider class="item"
+                    [max]=25
+                    [min]=1
+                    [(ngModel)]="nodeSizePixels" 
+                    (input)="onNodeSliderChange($event)"
+                    [thumbLabel]=true
+                    [disabled]="!drawnodes">
+                  </mat-slider>
+                  <p class="settings-label">Show nodes</p>
+                  <mat-checkbox class="item" [(ngModel)]="drawnodes" (change)="updateView()"></mat-checkbox>
+                </div>
+                <div class="left">
+                  <p class="settings-label">Supernode size (px)</p>
+                  <mat-slider class="item"
+                    [max]=25
+                    [min]=1
+                    [(ngModel)]="supernodeSizePixels" 
+                    (input)="onSuperNodeSliderChange($event)"
+                    [thumbLabel]=true
+                    [disabled]="!drawsupernodes">
+                  </mat-slider>
+                  <p class="settings-label">Show supernodes</p>
+                  <mat-checkbox class="item" [(ngModel)]="drawsupernodes" (change)="updateView()"></mat-checkbox>
+                </div>
+                <div class="left">
+                  <p class="settings-label">Interpolate node position</p>
+                  <mat-checkbox class="item" [(ngModel)]="interpolate" (change)="showLoadingSpinner($event)"></mat-checkbox>
+                  <p class="settings-label">FPS </p>
+                  <mat-slider class="item"
+                  [max]=30
+                  [min]=1
+                  (change)="onFPSchange($event)"
+                  [(ngModel)]="fps"
+                  [disabled]="!interpolate"
+                  [thumbLabel]=true>
+                </mat-slider>
+                
+                </div>
+              </div>
+          
+          </mat-expansion-panel>
+        <mat-expansion-panel>
           <mat-expansion-panel-header>
-            <mat-panel-title>
-              Display Options
-            </mat-panel-title>
-            <mat-panel-description>
-              change what's shown on the right
-            </mat-panel-description>
-          </mat-expansion-panel-header>
-          <div class="left-container">
-              <div class="left">
-              <p class="settings-label">Block size (px)</p>
-                <mat-slider class="item"
-                  [max]=200
-                  [min]=10 
-                  [(ngModel)]="blockSizePixels" 
-                  (input)="onSliderChange($event)"
-                  [thumbLabel]=true
-                  [disabled]="!drawgrid">
-                </mat-slider>
-                <p class="settings-label">Show grid</p>
-                <mat-checkbox class="item" [(ngModel)]="drawgrid" (change)="updateView()"></mat-checkbox>
+              <mat-panel-title>
+                Information
+              </mat-panel-title>
+              <mat-panel-description>
+                simulation information
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+            <div class="left-container">
+              <div class="left" *ngIf="interpolate">
+                  <p class="settings-label">Actual FPS ≈ {{fps_actual}}</p>
               </div>
               <div class="left">
-                <p class="settings-label">Purple intensity</p>
-                <mat-slider class="item"
-                  [max]=200
-                  [min]=1 
-                  [(ngModel)]="purpleIntensityPerNode" 
-                  [thumbLabel]=true
-                  (input)="onPurpleChange($event)"
-                  [disabled]="!drawgrid">
-                </mat-slider>
+                  <p class="settings-label">Number of nodes: {{nodes.Nodes().size}}</p>
               </div>
               <div class="left">
-                  <p class="settings-label">Smooth purple</p>
-                <mat-checkbox class="item" [(ngModel)]="smoothPurple" (change)="updateView()" [disabled]="!drawgrid"></mat-checkbox>
-                <p class="settings-label">Smoothing time (ms)</p>
-                <mat-slider class="item"
-                  [max]=1000
-                  [min]=50 
-                  [(ngModel)]="smoothingTime" 
-                  [thumbLabel]=true
-                  [disabled]="!drawgrid || !smoothPurple">
-                </mat-slider>
-              </div>
-              <div class="left">
-                <p class="settings-label">Node size (px)</p>
-                <mat-slider class="item"
-                  [max]=25
-                  [min]=1
-                  [(ngModel)]="nodeSizePixels" 
-                  (input)="onNodeSliderChange($event)"
-                  [thumbLabel]=true
-                  [disabled]="!drawnodes">
-                </mat-slider>
-                <p class="settings-label">Show nodes</p>
-                <mat-checkbox class="item" [(ngModel)]="drawnodes" (change)="updateView()"></mat-checkbox>
-              </div>
-              <div class="left">
-                <p class="settings-label">Supernode size (px)</p>
-                <mat-slider class="item"
-                  [max]=25
-                  [min]=1
-                  [(ngModel)]="supernodeSizePixels" 
-                  (input)="onSuperNodeSliderChange($event)"
-                  [thumbLabel]=true
-                  [disabled]="!drawsupernodes">
-                </mat-slider>
-                <p class="settings-label">Show supernodes</p>
-                <mat-checkbox class="item" [(ngModel)]="drawsupernodes" (change)="updateView()"></mat-checkbox>
-              </div>
-              <div class="left">
-                <p class="settings-label">Interpolate node position</p>
-                <mat-checkbox class="item" [(ngModel)]="interpolate" (change)="showLoadingSpinner($event)"></mat-checkbox>
-                <p class="settings-label">FPS </p>
-                <mat-slider class="item"
-                [max]=30
-                [min]=1
-                (change)="onFPSchange($event)"
-                [(ngModel)]="fps"
-                [disabled]="!interpolate"
-                [thumbLabel]=true>
-              </mat-slider>
-              
+                  <p class="settings-label">feet / block ≈ {{(blockSizePixels/scale *69.172*5280).toFixed(1)}}</p>
               </div>
             </div>
-         
-        </mat-expansion-panel>
-      <mat-expansion-panel>
-        <mat-expansion-panel-header>
-            <mat-panel-title>
-              Information
-            </mat-panel-title>
-            <mat-panel-description>
-              simulation information
-            </mat-panel-description>
-          </mat-expansion-panel-header>
-          <div class="left-container">
-            <div class="left" *ngIf="interpolate">
-                <p class="settings-label">Actual FPS ≈ {{fps_actual}}</p>
-            </div>
-            <div class="left">
-                <p class="settings-label">Number of nodes: {{nodes.Nodes().size}}</p>
-            </div>
-            <div class="left">
-                <p class="settings-label">feet / block ≈ {{(blockSizePixels/scale *69.172*5280).toFixed(1)}}</p>
-            </div>
-          </div>
-        </mat-expansion-panel>
-      </mat-accordion>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </div>
     
   </div>
   <div class="bottom right">

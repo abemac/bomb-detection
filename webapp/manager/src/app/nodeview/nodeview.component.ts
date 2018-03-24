@@ -1,6 +1,8 @@
 import { Component,ViewChild,ElementRef,AfterViewInit  } from '@angular/core';
 import {NODEDATA} from '../types'
 import { NodesService } from '../nodes.service';
+import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material';
+import {SimchooserComponent} from '../simchooser/simchooser.component'
 @Component({
   selector: 'app-nodeview',
   templateUrl: './nodeview.component.html',
@@ -47,7 +49,7 @@ export class NodeViewComponent implements AfterViewInit {
   trx : number=this.canvasWidthPixels/2
   try: number=this.canvasHeightPixels/2
 
-  constructor( public nodes: NodesService){
+  constructor( public nodes: NodesService,public dialog: MatDialog){
     this.focusy=this.canvasHeightPixels/2
     this.focusx=this.canvasWidthPixels/2
     this.blockIntensites=new Array<Array<number>>()
@@ -67,6 +69,18 @@ export class NodeViewComponent implements AfterViewInit {
     this.update()
     this.onStartToggle(null)
     setTimeout(()=>this.loading=false,2*this.updateInterval)
+  }
+  openDialog(): void {
+    let dialogRef = this.dialog.open(SimchooserComponent, {
+      width: '1000px'
+      //data: { name: this.name, animal: this.animal }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log(result)
+      console.log('The dialog was closed');
+      //this.animal = result;
+    });
   }
 
   update(){
