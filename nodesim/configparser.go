@@ -16,7 +16,7 @@ func ExecConfigFile(file string, managerIP string) {
 	if err != nil {
 		log.E(err)
 	}
-	for _, r := range (config.(map[string]interface{}))["rows"].([]interface{}) {
+	for _, r := range (config.(map[string]interface{}))["nodes"].([]interface{}) {
 		row := r.(map[string]interface{})
 		north := int(row["north"].(float64))
 		south := int(row["south"].(float64))

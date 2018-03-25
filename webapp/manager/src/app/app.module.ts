@@ -26,6 +26,10 @@ import {MatStepperModule} from '@angular/material/stepper';
 import { SimchooserComponent } from './simchooser/simchooser.component';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatSelectModule} from '@angular/material/select';
+import {TabControlService} from './tab-control.service'
+import {MatChipsModule} from '@angular/material/chips';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatIconModule} from '@angular/material/icon';
 
 
 @NgModule({
@@ -57,9 +61,12 @@ import {MatSelectModule} from '@angular/material/select';
     MatExpansionModule,
     MatStepperModule,
     MatDialogModule,
-    MatSelectModule
+    MatSelectModule,
+    MatChipsModule,
+    MatProgressSpinnerModule,
+    MatIconModule
   ],
-  providers: [NodesService],
+  providers: [NodesService,TabControlService],
   entryComponents: [SimchooserComponent],
   bootstrap: [AppComponent]
 })

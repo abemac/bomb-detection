@@ -84,18 +84,27 @@ func (w *WebUI) handleUpload(resp http.ResponseWriter, req *http.Request) {
 		_, err = os.Stat(filepath.Join(constants.DIST_PATH, "assets", "uploads", req.Header["Filename"][0]))
 		if err == nil {
 			log.E("File already exists")
+			resp.WriteHeader(http.StatusInternalServerError)
+			resp.Header().Set("Content-Type", "text/plain")
 			fmt.Fprintln(resp, "ERROR: file already exists. Please Rename")
+
 		} else {
 			file, err := os.Create(filepath.Join(constants.DIST_PATH, "assets", "uploads", req.Header["Filename"][0]))
 			if err != nil {
 				log.E(err)
+				resp.WriteHeader(http.StatusInternalServerError)
+				resp.Header().Set("Content-Type", "text/plain")
 				fmt.Fprintln(resp, err, "ERROR uploading config file")
 			} else {
 				_, err = file.Write(data)
 				err = file.Close()
 				if err == nil {
+					resp.WriteHeader(http.StatusAccepted)
+					resp.Header().Set("Content-Type", "text/plain")
 					fmt.Fprintln(resp, "SUCCESS")
 				} else {
+					resp.WriteHeader(http.StatusInternalServerError)
+					resp.Header().Set("Content-Type", "text/plain")
 					fmt.Fprintln(resp, err, "ERROR uploading config file")
 				}
 			}

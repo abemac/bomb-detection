@@ -13,10 +13,12 @@ declare var $ :any;
 export class CreatorComponent implements OnInit {
   firstFormGroup: FormGroup;
   secondFormGroup: FormGroup;
-
   
   nodeConfigRows: ConfigRow[]=new Array<ConfigRow>();
-
+  uploading: boolean =false;
+  error:boolean = false;
+  errorMSG:string="";
+  success:boolean=false;
 
   constructor(private _formBuilder: FormBuilder,private http: HttpClient) {  
     
@@ -41,13 +43,70 @@ export class CreatorComponent implements OnInit {
     this.nodeConfigRows.splice(index,1)
   }
   
-  saveConfig(){
+  jsontext():any{
     var config=[];
     config.push(
       `{"filename":"${this.firstFormGroup.get('filename').value}.json",`,
       `"description":"${this.firstFormGroup.get('description').value}",`,
     )
-    config.push(`"rows": [`)
+    config.push(`"nodes": [`)
+    var first=true;
+    this.nodeConfigRows.forEach((row,index,rows)=>{
+      if (!first){
+        config.push(",");
+      }else{
+        first=false;
+      }
+      config.push(
+        `{"north":${row.north},`,
+        `"east":${row.east},`,
+        `"south":${row.south},`,
+        `"west":${row.west},`,
+        `"num":${row.num},`,
+        `"supernode":${row.supernode},`,
+        `"group":${row.group}}`
+      );
+    });
+    config.push(`]}`)
+
+    var jsonStr= config.join("")
+    var escapedJson= jsonStr.replace(/[\b]/g, '\\b')
+                            .replace(/[\f]/g, '\\f')
+                            .replace(/[\n]/g, '\\n')
+                            .replace(/[\r]/g, '\\r')
+                            .replace(/[\t]/g, '\\t')
+    return JSON.parse(escapedJson)
+  }
+  totalNodes():number{
+   return this.nodeConfigRows.map((val,index,vals)=>{
+    if (val.supernode){
+      return 0;
+    }else{
+      return val.num;
+    }
+   }).reduce((prev,curr,ind,arr)=>{
+     return prev+curr;
+   });
+  }
+  totalSuperNodes():number{
+    return this.nodeConfigRows.map((val,index,vals)=>{
+     if (!val.supernode){
+       return 0;
+     }else{
+       return val.num;
+     }
+    }).reduce((prev,curr,ind,arr)=>{
+      return prev+curr;
+    });
+   }
+  saveConfig(){
+    this.uploading=true;
+    var config=[];
+    config.push(
+      `{"filename":"${this.firstFormGroup.get('filename').value}.json",`,
+      `"description":"${this.firstFormGroup.get('description').value}",`,
+    )
+    config.push(`"nodes": [`)
     var first=true;
     this.nodeConfigRows.forEach((row,index,rows)=>{
       if (!first){
@@ -74,9 +133,24 @@ export class CreatorComponent implements OnInit {
                             .replace(/[\r]/g, '\\r')
                             .replace(/[\t]/g, '\\t')
     var httpOptions = {
-      headers: new HttpHeaders({ 'Filename': `${this.firstFormGroup.get('filename').value}.json`})
+      headers: new HttpHeaders({ 'Filename': `${this.firstFormGroup.get('filename').value}.json`}),
+      responseType: 'text' as 'text'
     };
-    this.http.post('/UploadConfig',escapedJson,httpOptions ).toPromise().then(resp=>{});
+    
+    this.http.post('/UploadConfig',escapedJson,httpOptions ).toPromise().then(resp=>{
+      console.log(resp)
+      this.uploading=false;
+      this.success=true;
+      this.error=false;
+    }).catch(
+      err=>{
+        console.log(err.error)
+        this.errorMSG=err.error;
+        this.uploading=false;
+        this.error=true;
+        this.success=false;
+      }
+    );
   }
 
 }

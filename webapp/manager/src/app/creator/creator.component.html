@@ -49,9 +49,36 @@
     </mat-step>
     <mat-step>
       <ng-template matStepLabel>Confirm</ng-template>
-      Press create to confirm
-      <div style="margin:20px">
-        <button mat-raised-button (click)="saveConfig()" >Create</button>
+      <div class="confirm">
+        <div class="left">
+            <h4>Name</h4>
+            <p>{{this.firstFormGroup.get('filename').value}}.json</p>
+            <h4>Total Number of Nodes</h4> 
+            <p>{{totalNodes()}}</p>
+            <h4>Total Number of Supernodes</h4>  
+            <p>{{totalSuperNodes()}}</p> 
+            <h4>Description</h4>
+            <textarea class="descpprev" value="{{this.firstFormGroup.get('description').value}}" readonly></textarea>
+         </div>
+         <div class="separator"></div>
+         <div class="right">
+            <div class="mat-typography">
+                <h3 style="margin-top:40px">JSON Preview:</h3>
+            </div>
+            <textarea class="jsonpreview" placeholder="{{jsontext() | json}}" readonly></textarea>
+        </div>
+        <div class="footer">
+            Press create to confirm
+            <div style="margin:20px">
+              <button mat-raised-button (click)="saveConfig()" >Create</button>
+            </div>
+            <i *ngIf="uploading" class="fa fa-spinner fa-spin"></i>
+            <mat-icon *ngIf="success">check</mat-icon>
+            <div class="mat-typography" *ngIf="error">
+                <p style="color:red">{{errorMSG}}</p>
+            </div>
+
+          </div>
       </div>
     </mat-step>
   </mat-horizontal-stepper>

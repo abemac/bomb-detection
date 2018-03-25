@@ -1,6 +1,7 @@
 import { Component, OnInit,Inject} from '@angular/core';
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material';
 import { HttpClient,HttpHeaders } from '@angular/common/http';
+import { TabControlService } from '../tab-control.service';
 
 @Component({
   selector: 'app-simchooser',
@@ -12,7 +13,7 @@ export class SimchooserComponent implements OnInit {
   files : string[]=new Array<string>() 
   jsontext:any
   description:string;
-  constructor(
+  constructor(private tabs : TabControlService,
     public dialogRef: MatDialogRef<SimchooserComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,private http: HttpClient) { 
       this.http.get("/GetConfig").toPromise().then( resp =>{
@@ -35,6 +36,7 @@ export class SimchooserComponent implements OnInit {
     this.dialogRef.close();
   }
   goToCreator(){
-    this.dialogRef.close();
+    this.dialogRef.close("CREATE");
+    this.tabs.setIndex(2)
   }
 }

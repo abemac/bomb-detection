@@ -1,1 +1,1 @@
-{"filename":"Left Drift.json","description":"Default one","rows": [{"north":0,"east":0,"south":0,"west":80,"num":900,"supernode":false,"group":false},{"north":0,"east":0,"south":0,"west":0,"num":20,"supernode":true,"group":false}]}
+{"filename":"Left Drift.json","description":"Default one","nodes": [{"north":0,"east":0,"south":0,"west":80,"num":900,"supernode":false,"group":false},{"north":0,"east":0,"south":0,"west":0,"num":20,"supernode":true,"group":false}]}
