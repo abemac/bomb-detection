@@ -1,8 +1,10 @@
 import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { NODEDATA } from '../types'
 import { NodesService } from '../nodes.service';
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA, } from '@angular/material';
 import { SimchooserComponent } from '../simchooser/simchooser.component'
+import { HttpClient,HttpHeaders } from '@angular/common/http';
+
 @Component({
   selector: 'app-nodeview',
   templateUrl: './nodeview.component.html',
@@ -49,7 +51,7 @@ export class NodeViewComponent implements AfterViewInit {
   trx: number = this.canvasWidthPixels / 2
   try: number = this.canvasHeightPixels / 2
 
-  constructor(public nodes: NodesService, public dialog: MatDialog) {
+  constructor(public nodes: NodesService, public dialog: MatDialog,private http:HttpClient) {
     this.focusy = this.canvasHeightPixels / 2
     this.focusx = this.canvasWidthPixels / 2
     this.blockIntensites = new Array<Array<number>>()
@@ -71,14 +73,31 @@ export class NodeViewComponent implements AfterViewInit {
     setTimeout(() => this.loading = false, 2 * this.updateInterval)
   }
   openDialog(): void {
+
     let dialogRef = this.dialog.open(SimchooserComponent, {
-      width: '1000px'
+      width: '1000px',
+      disableClose: true
+      
       //data: { name: this.name, animal: this.animal }
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      
+      if(result=="SUCCESS"){
+
+      }
     });
+  }
+
+  
+  stopSim(){
+    var httpOptions = {
+      responseType: 'text' as 'text'
+    };
+    this.http.get('/StopSim',httpOptions).toPromise().then( resp =>{
+      console.log(resp)
+    }).catch(err=>{
+      console.log(err.error)
+    })
   }
 
   update() {
@@ -115,10 +134,8 @@ export class NodeViewComponent implements AfterViewInit {
       this.context.fillStyle = "ghostwhite"
       this.context.fillRect(0, 0, this.canvasWidthPixels, this.canvasHeightPixels)
     }
-
     this.drawNodes()
     this.oldscale = this.scale
-
   }
   updateBlockCounts() {
     var old
@@ -133,7 +150,7 @@ export class NodeViewComponent implements AfterViewInit {
     }
     if (this.paused) {
       this.nodes.SavedNodes().forEach((node, key, nodes) => {
-        var rowi = Math.floor((this.try + node.lat * this.scale) / this.blockSizePixels)
+        var rowi = Math.floor((this.try - node.lat * this.scale) / this.blockSizePixels)
         var coli = Math.floor((this.trx + node.long * this.scale) / this.blockSizePixels)
 
         if (this.blockIntensites[rowi] != undefined) {
@@ -144,7 +161,7 @@ export class NodeViewComponent implements AfterViewInit {
       });
     } else {
       this.nodes.Nodes().forEach((node, key, nodes) => {
-        var rowi = Math.floor((this.try + node.lat * this.scale) / this.blockSizePixels)
+        var rowi = Math.floor((this.try - node.lat * this.scale) / this.blockSizePixels)
         var coli = Math.floor((this.trx + node.long * this.scale) / this.blockSizePixels)
 
         if (this.blockIntensites[rowi] != undefined) {
@@ -247,11 +264,11 @@ export class NodeViewComponent implements AfterViewInit {
     this.context.translate(this.trx, this.try)
     if (this.paused) {
       this.nodes.SavedNodes().forEach((node, key, nodes) => {
-        this.drawNode(node.long * this.scale, node.lat * this.scale, node.sn)
+        this.drawNode(node.long * this.scale, -node.lat * this.scale, node.sn)
       });
     } else {
       this.nodes.Nodes().forEach((node, key, nodes) => {
-        this.drawNode(node.long * this.scale, node.lat * this.scale, node.sn)
+        this.drawNode(node.long * this.scale, -node.lat * this.scale, node.sn)
       });
     }
     this.context.restore()

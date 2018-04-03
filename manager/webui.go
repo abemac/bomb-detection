@@ -7,9 +7,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/abemac/bomb-detection/constants"
+	"github.com/abemac/bomb-detection/nodesim"
 )
 
 //WebUI represents the Web interface
@@ -31,12 +35,84 @@ func (w *WebUI) setup() {
 	http.HandleFunc("/GetNodes", w.handleNodeInfoRequest)
 	http.HandleFunc("/UploadConfig", w.handleUpload)
 	http.HandleFunc("/GetConfig", w.handleGetConfig)
+	http.HandleFunc("/StartSim", w.handleStartSim)
+	http.HandleFunc("/StopSim", w.handleStopSim)
 
 }
 
 //Run the http server
 func (w *WebUI) Run() {
 	http.ListenAndServe(":8080", nil)
+}
+func simRunning() bool {
+	cmd := "docker ps | grep nodesim | wc -l"
+	out, err := exec.Command("bash", "-c", cmd).Output()
+	if err != nil {
+		log.E(err.Error())
+	}
+	if strings.TrimSpace(string(out)) == "0" {
+		return false
+	}
+	return true
+}
+func (w *WebUI) handleStopSim(resp http.ResponseWriter, req *http.Request) {
+
+	cmd := "docker ps | grep nodesim | awk '{print $NF}'"
+	out, err := exec.Command("bash", "-c", cmd).Output()
+	if err != nil {
+		log.E(err.Error())
+		resp.WriteHeader(http.StatusInternalServerError)
+		resp.Header().Set("Content-Type", "text/plain")
+		fmt.Fprintln(resp, "ERROR:", err.Error())
+	} else {
+		for _, container := range strings.Split(string(out), "\n") {
+			if container != "" {
+				log.I(container)
+				err := exec.Command("docker", "kill", container).Run()
+				if err != nil {
+					log.E(err.Error())
+					resp.WriteHeader(http.StatusInternalServerError)
+					resp.Header().Set("Content-Type", "text/plain")
+					fmt.Fprintln(resp, "ERROR:", err.Error())
+				}
+				resp.Header().Set("Content-Type", "text/plain")
+				fmt.Fprintln(resp, "SUCCESS")
+			}
+		}
+	}
+}
+func (w *WebUI) handleStartSim(resp http.ResponseWriter, req *http.Request) {
+	qp := req.URL.Query()
+	if filename, ok := qp["filename"]; ok {
+		if simRunning() {
+			resp.WriteHeader(http.StatusInternalServerError)
+			resp.Header().Set("Content-Type", "text/plain")
+			fmt.Fprintln(resp, "ERROR: simulation already running")
+			return
+		}
+		nodesim.SplitConfigFile(filename[0])
+		outdir := filepath.Join(os.Getenv("GOPATH"), "/src/github.com/abemac/bomb-detection/run/config-parts/")
+		basename := filename[0][0 : len(filename[0])-5]
+		files, err := filepath.Glob(filepath.Join(outdir, basename+"-*.json"))
+
+		for index, file := range files {
+			log.I(filepath.Base(file))
+			cmd := exec.Command("docker", "run", "--rm", "--name", "nodesim"+strconv.Itoa(index),
+				"-v", os.Getenv("GOPATH")+":/go", "-e", "GOPATH=/go", "-e", "LOG_LEVEL=4",
+				"-e", "NODE_CONFIG_FILE="+filepath.Base(file), "nodesim")
+			err := cmd.Start()
+			if err != nil {
+				log.E(err.Error())
+			}
+		}
+		if err != nil {
+			log.E(err)
+		}
+	} else {
+		resp.WriteHeader(http.StatusInternalServerError)
+		resp.Header().Set("Content-Type", "text/plain")
+		fmt.Fprintln(resp, "ERROR: must specify query parameter filename")
+	}
 }
 func (w *WebUI) handleGetConfig(resp http.ResponseWriter, req *http.Request) {
 	qp := req.URL.Query()
@@ -110,7 +186,6 @@ func (w *WebUI) handleUpload(resp http.ResponseWriter, req *http.Request) {
 			}
 
 		}
-		return
 	}
 }
 func (w *WebUI) handleNodeInfoRequest(resp http.ResponseWriter, req *http.Request) {

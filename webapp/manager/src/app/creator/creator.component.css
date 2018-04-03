@@ -125,3 +125,6 @@ mat-horizontal-stepper {
     border: 1px solid aliceblue;
     border-radius: 10px;
 }
+.successful{
+  margin-top:30vh;
+}

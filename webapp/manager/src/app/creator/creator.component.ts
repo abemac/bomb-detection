@@ -152,6 +152,16 @@ export class CreatorComponent implements OnInit {
       }
     );
   }
+  reset(){
+    
+    
+    this.nodeConfigRows=new Array<ConfigRow>();
+    this.uploading =false;
+    this.error = false;
+    this.errorMSG="";
+    this.ngOnInit()
+    this.success=false;
+  }
 
 }
 class ConfigRow{

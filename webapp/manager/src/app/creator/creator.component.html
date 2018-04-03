@@ -1,5 +1,5 @@
 <div class="mainwrapper">
-  <mat-horizontal-stepper [linear]="true" #stepper="matHorizontalStepper">
+  <mat-horizontal-stepper [linear]="true" #stepper="matHorizontalStepper" *ngIf="!success">
     <mat-step [stepControl]="firstFormGroup">
       <form [formGroup]="firstFormGroup">
         <div class="inputswrapper">
@@ -70,7 +70,7 @@
         <div class="footer">
             Press create to confirm
             <div style="margin:20px">
-              <button mat-raised-button (click)="saveConfig()" >Create</button>
+              <button mat-raised-button color="primary" (click)="saveConfig()" >Create</button>
             </div>
             <i *ngIf="uploading" class="fa fa-spinner fa-spin"></i>
             <mat-icon *ngIf="success">check</mat-icon>
@@ -82,4 +82,9 @@
       </div>
     </mat-step>
   </mat-horizontal-stepper>
+  <div class="successful mat-typography" *ngIf="success">
+    <h1>Success <mat-icon>check</mat-icon></h1>
+    <h4>This simulation can be run from the Visual tab.</h4>
+    <button mat-raised-button color="primary" (click)="reset()" >Make Another</button>
+  </div>
 </div>

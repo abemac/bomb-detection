@@ -13,6 +13,13 @@ export class SimchooserComponent implements OnInit {
   files : string[]=new Array<string>() 
   jsontext:any
   description:string;
+  filename:string;
+  error:boolean=false;
+  errorMSG:string=""
+  success=false;
+  starting=false;
+  closeStr="Cancel"
+  selected:boolean =false;
   constructor(private tabs : TabControlService,
     public dialogRef: MatDialogRef<SimchooserComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,private http: HttpClient) { 
@@ -24,6 +31,8 @@ export class SimchooserComponent implements OnInit {
     }
 
   onChoose(event){
+    this.selected=true;
+    this.filename=event.value;
     this.http.get("/GetConfig?filename="+event.value).toPromise().then( resp =>{
       this.jsontext=resp
       this.description=resp['description']
@@ -31,9 +40,29 @@ export class SimchooserComponent implements OnInit {
   }
   ngOnInit() {
   }
-  
+  onStart(){
+    this.starting=true;
+    this.http.get("/StartSim?filename="+this.filename).toPromise().then( resp =>{
+      this.starting=false;
+      this.error=false;
+      this.success=true;
+      this.errorMSG=""
+      this.closeStr="Close"
+      console.log(resp)
+    }).catch(err=>{
+      this.starting=false;
+      this.error=true;
+      this.errorMSG=err.error
+      this.success=false
+      console.log(err.error)
+    })
+  }
   onCancelClick(): void {
-    this.dialogRef.close();
+    if(this.success){
+      this.dialogRef.close("SUCCESS");
+    }else{
+      this.dialogRef.close();
+    }
   }
   goToCreator(){
     this.dialogRef.close("CREATE");

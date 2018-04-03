@@ -60,3 +60,8 @@
     color:#317ed2;
     cursor: pointer;
 }
+.indicatoricon{
+    vertical-align: middle;
+    padding-bottom: 7px;
+    padding-left: 5px; 
+}
