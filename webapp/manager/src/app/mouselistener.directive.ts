@@ -10,6 +10,7 @@ export class MouseListenerDirective {
   @Output() mouseMove = new EventEmitter()
   @Output() mouseOut = new EventEmitter()
   @Output() mouseIn = new EventEmitter()
+  @Output() mouseClick = new EventEmitter()
 
   @HostListener('mousewheel', ['$event']) onMouseWheelChrome(event: any) {
     this.mouseWheelFunc(event);
@@ -37,6 +38,12 @@ export class MouseListenerDirective {
   }
   @HostListener('mouseenter',['$event']) onMouseIn(event:any){
     this.mouseInFunc(event)
+  }
+  @HostListener('click',['$event']) onMouseClick(event:any){
+    this.onMouseClickFunc(event)
+  }
+  onMouseClickFunc(event:any){
+    this.mouseClick.emit(event)
   }
   
   mouseWheelFunc(event: any) {

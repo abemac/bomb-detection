@@ -1,6 +1,6 @@
 .mainwrapper{
     display:grid;
-    grid-template-rows:80px auto;
+    grid-template-rows:80px auto 80px;
     grid-template-columns: 1fr 1fr;
     justify-content: space-evenly;
     align-content: center;
@@ -39,6 +39,13 @@
 }
 .bottom{
     grid-row:2;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+}
+.nodeinfo{
+    grid-row:3;
+    grid-column: 2;
     justify-content: center;
     display: flex;
     align-items: center;

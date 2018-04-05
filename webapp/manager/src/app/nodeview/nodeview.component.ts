@@ -3,7 +3,7 @@ import { NODEDATA } from '../types'
 import { NodesService } from '../nodes.service';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA, } from '@angular/material';
 import { SimchooserComponent } from '../simchooser/simchooser.component'
-import { HttpClient,HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-nodeview',
@@ -50,8 +50,10 @@ export class NodeViewComponent implements AfterViewInit {
   focusx: number;
   trx: number = this.canvasWidthPixels / 2
   try: number = this.canvasHeightPixels / 2
+  highlightedNodeId:number=-1;
+  selectedNode:boolean=false;
 
-  constructor(public nodes: NodesService, public dialog: MatDialog,private http:HttpClient) {
+  constructor(public nodes: NodesService, public dialog: MatDialog, private http: HttpClient) {
     this.focusy = this.canvasHeightPixels / 2
     this.focusx = this.canvasWidthPixels / 2
     this.blockIntensites = new Array<Array<number>>()
@@ -77,27 +79,27 @@ export class NodeViewComponent implements AfterViewInit {
     let dialogRef = this.dialog.open(SimchooserComponent, {
       width: '1000px',
       disableClose: true
-      
+
       //data: { name: this.name, animal: this.animal }
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if(result=="SUCCESS"){
+      if (result == "SUCCESS") {
 
       }
     });
   }
 
-  
-  stopSim(){
+
+  stopSim() {
     var httpOptions = {
       responseType: 'text' as 'text'
     };
-    this.http.get('/StopSim',httpOptions).toPromise().then( resp =>{
+    this.http.get('/StopSim', httpOptions).toPromise().then(resp => {
       console.log(resp)
       this.nodes.reset()
       this.updateView()
-    }).catch(err=>{
+    }).catch(err => {
       console.log(err.error)
     })
 
@@ -267,16 +269,16 @@ export class NodeViewComponent implements AfterViewInit {
     this.context.translate(this.trx, this.try)
     if (this.paused) {
       this.nodes.SavedNodes().forEach((node, key, nodes) => {
-        this.drawNode(node.long * this.scale, -node.lat * this.scale, node.sn)
+        this.drawNode(node.long * this.scale, -node.lat * this.scale, node.sn,node.id==this.highlightedNodeId)
       });
     } else {
       this.nodes.Nodes().forEach((node, key, nodes) => {
-        this.drawNode(node.long * this.scale, -node.lat * this.scale, node.sn)
+        this.drawNode(node.long * this.scale, -node.lat * this.scale, node.sn,node.id==this.highlightedNodeId)
       });
     }
     this.context.restore()
   }
-  drawNode(x: number, y: number, supernode: boolean) {
+  drawNode(x: number, y: number, supernode: boolean,highlight:boolean) {
 
     if (supernode && this.drawsupernodes) {
       this.context.fillStyle = "#ff4081"
@@ -284,12 +286,27 @@ export class NodeViewComponent implements AfterViewInit {
       this.context.beginPath()
       this.context.arc(x, y, (this.supernodeSizePixels), 0, 2 * Math.PI)
       this.context.fill()
+      if(highlight){
+        this.context.strokeStyle="#000000"
+        this.context.lineWidth=2
+        this.context.beginPath()
+        this.context.arc(x, y, (this.supernodeSizePixels), 0, 2 * Math.PI)
+        this.context.stroke()
+      }
+      
     } else if (!supernode && this.drawnodes) {
       this.context.fillStyle = "hsl(120, 100%, 50%)"
       this.context.strokeStyle = "hsl(120, 100%, 50%)"
       this.context.beginPath()
       this.context.arc(x, y, this.nodeSizePixels, 0, 2 * Math.PI)
       this.context.fill()
+      if(highlight){
+        this.context.strokeStyle="#000000"
+        this.context.lineWidth=2
+        this.context.beginPath()
+        this.context.arc(x, y, (this.nodeSizePixels), 0, 2 * Math.PI)
+        this.context.stroke()
+      }
     }
   }
 
@@ -327,9 +344,11 @@ export class NodeViewComponent implements AfterViewInit {
   handPtr: string = "default-cursor"
   startX: number
   startY: number
+  dragged:boolean=false;
 
   onMouseDown(event) {
     this.mouseDown = true
+    this.dragged=false;
     this.startX = event.offsetX
     this.startY = event.offsetY
   }
@@ -339,6 +358,7 @@ export class NodeViewComponent implements AfterViewInit {
   }
   onMouseMove(event) {
     if (this.mouseDown) {
+      this.dragged=true;
       this.handPtr = "grab-cursor"
       var dx = event.offsetX - this.startX
       var dy = event.offsetY - this.startY
@@ -350,26 +370,36 @@ export class NodeViewComponent implements AfterViewInit {
         this.startY = event.offsetY
       }
     }
-    else{
-      if (this.paused) {
-        this.nodes.SavedNodes().forEach((node, key, nodes) => {
-          if (this.mouseOver(event,node)){
-            // console.log(node)
-          }
-        });
-      } else {
-        
+    else {
+      if(!this.selectedNode){
+        this.highlightedNodeId=-1;
+        if (this.paused) {
+          this.nodes.SavedNodes().forEach((node, key, nodes) => {
+            if (this.mouseOver(event, node)) {
+              // console.log(node)
+              this.highlightedNodeId=node.id;
+            }
+          });
+        } else {
+          this.nodes.Nodes().forEach((node, key, nodes) => {
+            if (this.mouseOver(event, node)) {
+              // console.log(node)
+              this.highlightedNodeId=node.id;
+            }
+          });
+        }
       }
+      
     }
   }
-  mouseOver(event,node):boolean{
-    var margin=this.nodeSizePixels;
-    if(node.sn){
-      var margin=this.supernodeSizePixels;
+  mouseOver(event, node): boolean {
+    var margin = this.nodeSizePixels;
+    if (node.sn) {
+      var margin = this.supernodeSizePixels;
     }
     //console.log(event,node,node.long * this.scale - event.offsetX+this.trx,this.try-node.lat * this.scale -event.offsetY)
-    if((Math.abs(node.long * this.scale - event.offsetX+this.trx) < margin) && (Math.abs(this.try-node.lat * this.scale -event.offsetY) < margin)){
-        return true;
+    if ((Math.abs(node.long * this.scale - event.offsetX + this.trx) < margin) && (Math.abs(this.try - node.lat * this.scale - event.offsetY) < margin)) {
+      return true;
     }
 
     return false;
@@ -384,6 +414,30 @@ export class NodeViewComponent implements AfterViewInit {
       this.handPtr = "grab-cursor"
     }
 
+  }
+  onMouseClick(event){
+    if(!this.dragged){
+      this.selectedNode=false;
+      this.highlightedNodeId=-1;
+    }
+    if (this.paused) {
+      this.nodes.SavedNodes().forEach((node, key, nodes) => {
+        if (this.mouseOver(event, node)) {
+          // console.log(node)
+          this.highlightedNodeId=node.id;
+          this.selectedNode=true;
+        }
+      });
+    } else {
+      this.nodes.Nodes().forEach((node, key, nodes) => {
+        if (this.mouseOver(event, node)) {
+          // console.log(node)
+          this.highlightedNodeId=node.id;
+          this.selectedNode=true;
+        }
+      });
+    }
+    this.updateView()
   }
 
 }

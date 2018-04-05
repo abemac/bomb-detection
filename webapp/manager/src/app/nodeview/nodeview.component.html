@@ -138,8 +138,18 @@
       (mouseUp)="onMouseUp($event)"
       (mouseMove)="onMouseMove($event)"
       (mouseOut)="onMouseOut($event)"
-      (mouseIn)="onMouseIn($event)">
+      (mouseIn)="onMouseIn($event)"
+      (mouseClick)="onMouseClick($event)">
     </canvas>
   </div>
+  <div class="nodeinfo">
+    <div *ngIf="highlightedNodeId!=-1">
+      <b>ID:</b> {{nodes.Nodes().get(highlightedNodeId).id}} 
+      &nbsp;
+      <b>Sample Value:</b> {{nodes.Nodes().get(highlightedNodeId).sv}}
+    </div>
+
+  </div>
+
   
 </div>
