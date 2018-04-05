@@ -8,9 +8,10 @@ import {NODEDATA} from '../types'
   styleUrls: ['./details.component.css']
 })
 export class DetailsComponent implements AfterViewInit {
-  displayedColumns = ['id', 'latitude', 'longitude','battery'];
+  displayedColumns = ['id', 'latitude', 'longitude','battery','value'];
   dataSource :any;
-  
+  filterStr:string;
+
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   constructor(private nodes: NodesService) {
@@ -19,12 +20,26 @@ export class DetailsComponent implements AfterViewInit {
 
 
   ngAfterViewInit() {
-    this.nodes.updateNodeData(-1).then(data=>{
-      this.dataSource = new MatTableDataSource<NODEDATA>(Array.from(this.nodes.nodesBuffer[0].values()));
-      this.dataSource.paginator = this.paginator;
-   })
+    
     
   }
+  applyFilter(){
+    this.dataSource.filter=this.filterStr;
+  }
+  refresh(){
+    this.nodes.updateNodeData(-1).then(data=>{
+      this.dataSource = new MatTableDataSource<NODEDATA>(Array.from(this.nodes.nodesBuffer[0].values()).sort((a,b)=>{
+        return a.id - b.id;
+      }));
+      this.dataSource.paginator = this.paginator;
+      this.dataSource.filter=this.filterStr;
+      this.dataSource.filterPredicate = (data)=>{
+        return String(data.id).startsWith(this.filterStr);
+      };
+   })
+  }
+
+
   
   
 }

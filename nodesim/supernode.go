@@ -22,19 +22,20 @@ type Supernode struct {
 }
 
 //NewNode creates a new Node
-func NewSupernode(ip string) {
+func NewSupernode(ip string, lat float64, long float64) {
 	n := new(Supernode)
 	n.managerIP = ip
 	n.managerPort = 12345
 	n.assignedID = constants.ID_NOT_ASSIGNED
-	n.lat, n.long = rand.Float64()*180-90, rand.Float64()*360-180
+	// n.lat, n.long = rand.Float64()*180-90, rand.Float64()*360-180
+	n.lat, n.long = lat, long
 	go n.mainLoop()
 	log.V("New Supernode created")
 }
-func CreateSupernodes(number uint64, ip string) {
+func CreateSupernodes(number uint64, ip string, lat float64, long float64) {
 	var i uint64
 	for i = 0; i < number; i++ {
-		NewSupernode(ip)
+		NewSupernode(ip, lat, long)
 	}
 	log.I(number, "new Supernodes created, they are active")
 }

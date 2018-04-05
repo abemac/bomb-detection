@@ -79,6 +79,12 @@ func (w *WebUI) handleStopSim(resp http.ResponseWriter, req *http.Request) {
 				fmt.Fprintln(resp, "SUCCESS")
 			}
 		}
+		w.mgr.nodesMutex.Lock()
+		w.mgr.supernodesMutex.Lock()
+		w.mgr.nodes = make(map[uint64]*node)
+		w.mgr.supernodes = make(map[uint64]*supernode)
+		w.mgr.nodesMutex.Unlock()
+		w.mgr.supernodesMutex.Unlock()
 	}
 }
 func (w *WebUI) handleStartSim(resp http.ResponseWriter, req *http.Request) {
@@ -155,6 +161,7 @@ func (w *WebUI) handleUpload(resp http.ResponseWriter, req *http.Request) {
 		fmt.Println(string(data))
 		_, err := os.Stat(filepath.Join(constants.DIST_PATH, "assets", "uploads"))
 		if err != nil {
+			os.Mkdir(filepath.Join(constants.DIST_PATH, "assets"), 0775)
 			os.Mkdir(filepath.Join(constants.DIST_PATH, "assets", "uploads"), 0775)
 		}
 		_, err = os.Stat(filepath.Join(constants.DIST_PATH, "assets", "uploads", req.Header["Filename"][0]))
@@ -199,7 +206,7 @@ func (w *WebUI) handleNodeInfoRequest(resp http.ResponseWriter, req *http.Reques
 			first = false
 		}
 		v.mutex.RLock()
-		fmt.Fprintf(resp, `{"id":%d,"lat":%f,"long":%f,"sn":false,"bp":%f}`, k, v.Latitude, v.Longitude, v.BatteryPercentage)
+		fmt.Fprintf(resp, `{"id":%d,"lat":%f,"long":%f,"sn":false,"bp":%f,"sv":%d}`, k, v.Latitude, v.Longitude, v.BatteryPercentage, v.Value)
 		v.mutex.RUnlock()
 	}
 	w.mgr.nodesMutex.Unlock()
@@ -207,7 +214,7 @@ func (w *WebUI) handleNodeInfoRequest(resp http.ResponseWriter, req *http.Reques
 	for k, v := range w.mgr.supernodes {
 		fmt.Fprintf(resp, ",")
 		v.mutex.RLock()
-		fmt.Fprintf(resp, `{"id":%d,"lat":%f,"long":%f,"sn":true,"bp":1.0}`, k, v.Latitude, v.Longitude)
+		fmt.Fprintf(resp, `{"id":%d,"lat":%f,"long":%f,"sn":true,"bp":1.0,"sv":%d}`, k, v.Latitude, v.Longitude, v.Value)
 		v.mutex.RUnlock()
 	}
 	fmt.Fprintf(resp, "]}")

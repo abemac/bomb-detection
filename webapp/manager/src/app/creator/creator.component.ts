@@ -64,7 +64,9 @@ export class CreatorComponent implements OnInit {
         `"west":${row.west},`,
         `"num":${row.num},`,
         `"supernode":${row.supernode},`,
-        `"group":${row.group}}`
+        `"group":${row.group},`,
+        `"lat":${row.lat},`,
+        `"long":${row.long}}`,
       );
     });
     config.push(`]}`)
@@ -121,7 +123,9 @@ export class CreatorComponent implements OnInit {
         `"west":${row.west},`,
         `"num":${row.num},`,
         `"supernode":${row.supernode},`,
-        `"group":${row.group}}`
+        `"group":${row.group},`,
+        `"lat":${row.lat},`,
+        `"long":${row.long}}`,
       );
     });
     config.push(`]}`)
@@ -172,6 +176,9 @@ class ConfigRow{
   num:number=0.0;
   supernode:boolean=false;
   group:boolean=false;
+  lat:number=0.0;
+  long:number=0.0;
+
   constructor(){
     this.north=0.0;
     this.east=0.0;
@@ -180,6 +187,8 @@ class ConfigRow{
     this.num=0;
     this.supernode=false;
     this.group=false;
+    this.lat=0.0;
+    this.long=0.0;
 
   }
 }

@@ -38,7 +38,17 @@ func getBestSuperNodeLocation(m *Manager, currentLat float64, currentLong float6
 	dist := math.MaxFloat64
 	for i := 0; i < numToConsider; i++ {
 		latdist := getBlockLat(possibleBlocks[i].row) - currentLat
+		if latdist > 180 {
+			latdist -= 180
+		} else if latdist < -180 {
+			latdist += 180
+		}
 		longdist := getBlockLong(possibleBlocks[i].col) - currentLong
+		if latdist > 360 {
+			latdist -= 360
+		} else if latdist < -360 {
+			latdist += 360
+		}
 		thisdist := math.Sqrt(latdist*latdist + longdist*longdist)
 		if thisdist < dist {
 			dist = thisdist

@@ -33,12 +33,13 @@ type NodeInfo struct {
 }
 
 //NewNode creates a new Node
-func NewNode(ip string, north int, south int, east int, west int) {
+func NewNode(ip string, north int, south int, east int, west int, lat float64, long float64) {
 	n := new(Node)
 	n.managerIP = ip
 	n.managerPort = 12345
 	n.assignedID = constants.ID_NOT_ASSIGNED
-	n.info.latitude, n.info.longitude = rand.Float64()*180-90, rand.Float64()*180
+	// n.info.latitude, n.info.longitude = rand.Float64()*180-90, rand.Float64()*180
+	n.info.latitude, n.info.longitude = lat, long
 	n.info.batteryPercentage = rand.Float32()
 	n.north = north
 	n.south = south
@@ -47,10 +48,10 @@ func NewNode(ip string, north int, south int, east int, west int) {
 	go n.mainLoop()
 	log.V("New Node created")
 }
-func CreateNodes(number uint64, ip string, north int, south int, east int, west int) {
+func CreateNodes(number uint64, ip string, north int, south int, east int, west int, lat float64, long float64) {
 	var i uint64
 	for i = 0; i < number; i++ {
-		NewNode(ip, north, south, east, west)
+		NewNode(ip, north, south, east, west, lat, long)
 	}
 	log.I(number, "new nodes created, they are active")
 }

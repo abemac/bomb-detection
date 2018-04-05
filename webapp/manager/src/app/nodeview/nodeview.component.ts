@@ -95,9 +95,12 @@ export class NodeViewComponent implements AfterViewInit {
     };
     this.http.get('/StopSim',httpOptions).toPromise().then( resp =>{
       console.log(resp)
+      this.nodes.reset()
+      this.updateView()
     }).catch(err=>{
       console.log(err.error)
     })
+
   }
 
   update() {
@@ -327,7 +330,6 @@ export class NodeViewComponent implements AfterViewInit {
 
   onMouseDown(event) {
     this.mouseDown = true
-    this.handPtr = "grab-cursor"
     this.startX = event.offsetX
     this.startY = event.offsetY
   }
@@ -337,6 +339,7 @@ export class NodeViewComponent implements AfterViewInit {
   }
   onMouseMove(event) {
     if (this.mouseDown) {
+      this.handPtr = "grab-cursor"
       var dx = event.offsetX - this.startX
       var dy = event.offsetY - this.startY
       if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
@@ -346,8 +349,30 @@ export class NodeViewComponent implements AfterViewInit {
         this.startX = event.offsetX
         this.startY = event.offsetY
       }
-
     }
+    else{
+      if (this.paused) {
+        this.nodes.SavedNodes().forEach((node, key, nodes) => {
+          if (this.mouseOver(event,node)){
+            // console.log(node)
+          }
+        });
+      } else {
+        
+      }
+    }
+  }
+  mouseOver(event,node):boolean{
+    var margin=this.nodeSizePixels;
+    if(node.sn){
+      var margin=this.supernodeSizePixels;
+    }
+    //console.log(event,node,node.long * this.scale - event.offsetX+this.trx,this.try-node.lat * this.scale -event.offsetY)
+    if((Math.abs(node.long * this.scale - event.offsetX+this.trx) < margin) && (Math.abs(this.try-node.lat * this.scale -event.offsetY) < margin)){
+        return true;
+    }
+
+    return false;
   }
   onMouseOut(event) {
     this.mouseDown = false

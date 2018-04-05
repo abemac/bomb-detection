@@ -30,11 +30,13 @@ func ExecConfigFile(file string, managerIP string) {
 		west := int(row["west"].(float64))
 		num := uint64(row["num"].(float64))
 		supernode := row["supernode"].(bool)
+		lat := row["lat"].(float64)
+		long := row["long"].(float64)
 		//group := row["group"].(bool)
 		if supernode {
-			CreateSupernodes(num, managerIP)
+			CreateSupernodes(num, managerIP, lat, long)
 		} else {
-			CreateNodes(num, managerIP, north, south, east, west)
+			CreateNodes(num, managerIP, north, south, east, west, lat, long)
 		}
 
 	}

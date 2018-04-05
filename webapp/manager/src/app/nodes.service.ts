@@ -32,6 +32,11 @@ export class NodesService {
             node.dlong=0
           }
         });
+    }else{
+      this.nodesBuffer[0].forEach((node,key,nodes)=>{
+        node.latcp=node.lat;
+        node.longcp=node.long;
+      })
     }
      }).catch(err=>{
        return Promise.reject(err.message || err);
@@ -59,6 +64,7 @@ export class NodesService {
         node.dlat=0
         node.dlong=0
       }
+      
     });
 
     this.nodesBuffer[2].forEach((node,key,nodes)=>{
@@ -84,5 +90,10 @@ export class NodesService {
        copy.sn=node.sn;
        this.savedFrame.set(key,copy);
      });
+   }
+
+   reset(){
+     this.nodesBuffer = [new Map<number,NODEDATA>(),new Map<number,NODEDATA>(),new Map<number,NODEDATA>()]
+     this.savedFrame=new Map<number,NODEDATA>();
    }
 }

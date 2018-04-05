@@ -33,8 +33,15 @@
             </mat-form-field>
            
             <mat-checkbox class="col3" ng-true-value="1" ng-false-value="0" title="should be a supernode?" [(ngModel)]="nodeConfigRows[$i].supernode" [ngModelOptions]="{standalone: true}">Supernode</mat-checkbox>
-            <mat-checkbox class="col4" ng-true-value="1" ng-false-value="0" title="all nodes should act as a group?" [(ngModel)]="nodeConfigRows[$i].group" [ngModelOptions]="{standalone: true}" [disabled]="nodeConfigRows[$i].supernode">Group</mat-checkbox>
-            <i title="delete row" class="fa fa-times col5" style="color:red;cursor:pointer" (click)="delrow($i)"></i>
+            <!-- <mat-checkbox class="col4" ng-true-value="1" ng-false-value="0" title="all nodes should act as a group?" [(ngModel)]="nodeConfigRows[$i].group" [ngModelOptions]="{standalone: true}" [disabled]="nodeConfigRows[$i].supernode">Group</mat-checkbox> -->
+            
+            <mat-form-field style="width:70px;" class="col4">
+              <input matInput type="number" title="initial latitude" style="width:70px; text-align:center" [(ngModel)]="nodeConfigRows[$i].lat" [ngModelOptions]="{standalone: true}">
+            </mat-form-field>
+            <mat-form-field style="width:70px;" class="col5">
+              <input matInput type="number" title="initial longitude" style="width:70px; text-align:center" [(ngModel)]="nodeConfigRows[$i].long" [ngModelOptions]="{standalone: true}">
+            </mat-form-field>
+            <i title="delete row" class="fa fa-times col6" style="color:red;cursor:pointer" (click)="delrow($i)"></i>
 
           </div>
         </div>

@@ -1,4 +1,8 @@
 <div class="main-wrapper mat-elevation-z8">
+  <button mat-raised-button color="primary" style="margin:20px" (click)="refresh()">Refresh</button>
+  <mat-form-field style="margin:20px">
+      <input matInput placeholder="Search ID" [(ngModel)]="filterStr" (keyup)="applyFilter()">
+  </mat-form-field>
   <mat-table #table [dataSource]="dataSource">
 
       <!--- Note that these columns can be defined in any order.
@@ -13,19 +17,24 @@
       <!-- Latitude Column -->
       <ng-container matColumnDef="latitude">
         <mat-header-cell *matHeaderCellDef> Latitude </mat-header-cell>
-        <mat-cell *matCellDef="let element"> {{element.lat}} </mat-cell>
+        <mat-cell *matCellDef="let element"> {{element.latcp}} </mat-cell>
       </ng-container>
 
       <!-- Longitude Column -->
       <ng-container matColumnDef="longitude">
         <mat-header-cell *matHeaderCellDef> Longitude </mat-header-cell>
-        <mat-cell *matCellDef="let element"> {{element.long}} </mat-cell>
+        <mat-cell *matCellDef="let element"> {{element.longcp}} </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="battery">
         <mat-header-cell *matHeaderCellDef> Battery </mat-header-cell>
         <mat-cell *matCellDef="let element"> {{element.bp}} </mat-cell>
       </ng-container>
+
+      <ng-container matColumnDef="value">
+          <mat-header-cell *matHeaderCellDef> Sample Value </mat-header-cell>
+          <mat-cell *matCellDef="let element"> {{element.sv}} </mat-cell>
+        </ng-container>
 
 
       <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
